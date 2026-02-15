@@ -14,6 +14,10 @@ import ProofPage from './pages/ProofPage';
 import ResumeBuilderLayout from './components/layout/ResumeBuilderLayout';
 import StepPage from './pages/resume-builder/StepPage';
 import ResumeProofPage from './pages/resume-builder/ResumeProofPage';
+import ResumeHome from './pages/resume/ResumeHome';
+import ResumeBuilder from './pages/resume/ResumeBuilder';
+import ResumePreview from './pages/resume/ResumePreview';
+import ResumeProof from './pages/resume/ResumeProof';
 
 function App() {
   return (
@@ -46,6 +50,12 @@ function App() {
           <Route path="08-ship" element={<StepPage />} />
           <Route path="proof" element={<ResumeProofPage />} />
         </Route>
+
+        {/* New AI Resume Builder Application Routes */}
+        <Route path="/resume" element={<ResumeHome />} />
+        <Route path="/resume/builder" element={<ResumeBuilder />} />
+        <Route path="/resume/preview" element={<ResumePreview />} />
+        <Route path="/resume/proof" element={<ResumeProof />} />
 
         {/* Fallback route */}
         <Route path="*" element={<Navigate to="/" replace />} />
