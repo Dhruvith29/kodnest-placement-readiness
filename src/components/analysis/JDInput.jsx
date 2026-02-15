@@ -12,8 +12,41 @@ export default function JDInput() {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const navigate = useNavigate();
 
+    const [error, setError] = useState('');
+    const [warning, setWarning] = useState('');
+
     const handleAnalyze = async () => {
-        if (!jdText.trim()) return;
+        setError('');
+        setWarning('');
+
+        if (!jdText.trim()) {
+            setError('Please paste a Job Description to proceed.');
+            return;
+        }
+
+        if (jdText.length < 200) {
+            setWarning('This JD is too short to analyze deeply. Paste full JD for better output.');
+            // We allow proceeding, but show warning. User can click again or we can auto-proceed with warning?
+            // Requirement says "show calm warning". It doesn't strictly say block. 
+            // But let's add a small confirmation or just show it nearby.
+            // Let's assume we proceed but display the warning in the UI if we don't navigate immediately.
+            // However, the analyzing happens immediately. 
+            // Let's delay slighty or just show it as a toast if we had one.
+            // Better: Show warning inline and let them click "Analyze" again or just proceed?
+            // Let's proceed but maybe store the warning? Or just let the analysis be "light".
+            // Actually, usually "show warning" implies interrupting. 
+            // But "This JD is too short..." usually implies a quality nudge.
+            // Let's use a confirm dialog or just proceed with a visible warning status if we were staying on page.
+            // Since we navigate away, maybe we just alert? No, "calm warning".
+            // Let's set a state and return if it's the *first* attempt, but maybe that's annoying.
+            // Let's just proceed for now but maybe UI shd reflect it? 
+            // Re-reading: "If JD < 200 characters: show calm warning". 
+            // Let's implement this: If < 200, set warning. If they click again, proceed.
+            if (!warning) {
+                setWarning('This JD is too short to analyze deeply. Click Analyze again to proceed anyway.');
+                return;
+            }
+        }
 
         setIsAnalyzing(true);
 
@@ -70,6 +103,9 @@ export default function JDInput() {
                         onChange={(e) => setJdText(e.target.value)}
                     />
                 </div>
+
+                {error && <p className="text-sm text-red-500 font-medium px-1">{error}</p>}
+                {warning && <p className="text-sm text-amber-600 font-medium px-1 bg-amber-50 p-2 rounded border border-amber-200">{warning}</p>}
 
                 <button
                     onClick={handleAnalyze}

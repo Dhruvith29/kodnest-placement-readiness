@@ -20,7 +20,22 @@ export function saveAnalysis(analysisData) {
 export function getHistory() {
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
-        return stored ? JSON.parse(stored) : [];
+        if (!stored) return [];
+
+        const parsed = JSON.parse(stored);
+        if (!Array.isArray(parsed)) return [];
+
+        // Filter valid entries
+        const validHistory = parsed.filter(item => {
+            return item && typeof item === 'object' && item.id && item.createdAt;
+        });
+
+        if (validHistory.length < parsed.length) {
+            console.warn("Some history entries were corrupted and filtered out.");
+            // Ideally we'd trigger a toast here, but for now we safeguard the data layer.
+        }
+
+        return validHistory;
     } catch (error) {
         console.error("Failed to load history", error);
         return [];

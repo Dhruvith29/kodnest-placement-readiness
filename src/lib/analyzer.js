@@ -1,69 +1,83 @@
 const SKILL_CATEGORIES = {
-    "Core CS": ["DSA", "OOP", "DBMS", "OS", "Networks", "Data Structures", "Algorithms", "Object Oriented", "Operating Systems", "Computer Networks"],
-    "Languages": ["Java", "Python", "JavaScript", "TypeScript", "C", "C++", "C#", "Go", "Golang", "Rust"],
-    "Web": ["React", "Next.js", "Node.js", "Express", "REST", "GraphQL", "HTML", "CSS", "Tailwind", "Django", "Spring"],
-    "Data": ["SQL", "MongoDB", "PostgreSQL", "MySQL", "Redis", "NoSQL", "Database"],
-    "Cloud/DevOps": ["AWS", "Azure", "GCP", "Docker", "Kubernetes", "CI/CD", "Linux", "DevOps", "Cloud"],
-    "Testing": ["Selenium", "Cypress", "Playwright", "JUnit", "PyTest", "Jest", "Testing"]
+    "coreCS": ["DSA", "OOP", "DBMS", "OS", "Networks", "Data Structures", "Algorithms", "Object Oriented", "Operating Systems", "Computer Networks"],
+    "languages": ["Java", "Python", "JavaScript", "TypeScript", "C", "C++", "C#", "Go", "Golang", "Rust"],
+    "web": ["React", "Next.js", "Node.js", "Express", "REST", "GraphQL", "HTML", "CSS", "Tailwind", "Django", "Spring"],
+    "data": ["SQL", "MongoDB", "PostgreSQL", "MySQL", "Redis", "NoSQL", "Database"],
+    "cloud": ["AWS", "Azure", "GCP", "Docker", "Kubernetes", "CI/CD", "Linux", "DevOps", "Cloud"],
+    "testing": ["Selenium", "Cypress", "Playwright", "JUnit", "PyTest", "Jest", "Testing"]
 };
 
 export function analyzeJD(text, company, role) {
     const normalizedText = text.toLowerCase();
-    const foundSkills = {};
+
+    // Initialize with empty arrays to ensure schema consistency
+    const extractedSkills = {
+        coreCS: [],
+        languages: [],
+        web: [],
+        data: [],
+        cloud: [],
+        testing: [],
+        other: []
+    };
+
     let totalSkillsFound = 0;
 
     // 1. Skill Extraction
-    for (const [category, skills] of Object.entries(SKILL_CATEGORIES)) {
-        const matched = skills.filter(skill => normalizedText.includes(skill.toLowerCase()));
+    for (const [category, keywords] of Object.entries(SKILL_CATEGORIES)) {
+        const matched = keywords.filter(skill => normalizedText.includes(skill.toLowerCase()));
         if (matched.length > 0) {
-            foundSkills[category] = matched;
+            extractedSkills[category] = matched;
             totalSkillsFound += matched.length;
         }
     }
 
     // Backup if empty
     if (totalSkillsFound === 0) {
-        foundSkills["General"] = ["Communication", "Aptitude", "Problem Solving"];
+        extractedSkills.other = ["Communication", "Problem Solving", "Basic Coding", "Projects"];
     }
 
-    // 2. Readiness Score Calculation
-    let score = 35; // Base
-    score += Object.keys(foundSkills).length * 5; // +5 per category
-    if (company && company.trim().length > 0) score += 10;
-    if (role && role.trim().length > 0) score += 10;
-    if (text.length > 800) score += 10;
+    // 2. Readiness Score Calculation (Base Score)
+    let baseScore = 35; // Base
+    baseScore += totalSkillsFound * 2; // +2 per skill (capped later)
+    if (company && company.trim().length > 0) baseScore += 10;
+    if (role && role.trim().length > 0) baseScore += 10;
+    if (text.length > 800) baseScore += 10;
 
     // Logical cap
-    score = Math.min(100, score);
+    baseScore = Math.min(100, baseScore);
 
     // 3. Plan Generation
-    const plan = generatePlan(foundSkills);
+    const plan7Days = generatePlan(extractedSkills);
 
-    // 4. Checklist Generation
-    const checklist = generateChecklist(foundSkills);
+    // 4. Checklist Generation (Array format)
+    const checklist = generateChecklist(extractedSkills);
 
     // 5. Questions Generation
-    const questions = generateQuestions(foundSkills);
+    const questions = generateQuestions(extractedSkills);
 
     // 6. Company Intel Generation
     const companyIntel = generateCompanyIntel(company);
 
     // 7. Round Mapping Generation
-    const roundMapping = generateRoundMapping(companyIntel.size, foundSkills);
+    const roundMapping = generateRoundMapping(companyIntel.size, extractedSkills);
 
     return {
         id: Date.now().toString(),
         createdAt: new Date().toISOString(),
-        company: company || "Unknown Company",
-        role: role || "Software Engineer",
+        company: company || "",
+        role: role || "",
         jdText: text,
-        extractedSkills: foundSkills,
-        plan,
-        checklist,
-        questions,
-        companyIntel,
+        extractedSkills,
         roundMapping,
-        readinessScore: score // Will be overridden by baseScore logic in ResultsPage if exists, but good to have initial
+        checklist,
+        plan7Days,
+        questions,
+        companyIntel, // Keeping this as it's useful for UI, even if not strictly in minimal schema request
+        baseScore: baseScore,
+        skillConfidenceMap: {},
+        finalScore: baseScore, // Initially same as base
+        updatedAt: new Date().toISOString()
     };
 }
 
@@ -100,7 +114,7 @@ function generateCompanyIntel(companyName) {
 
     return {
         name: companyName || "Target Company",
-        industry: "Technology", // simplified default
+        industry: "Technology",
         size,
         type,
         focus
@@ -108,28 +122,26 @@ function generateCompanyIntel(companyName) {
 }
 
 function generateRoundMapping(companySize, skills) {
-    const hasDSA = skills["Core CS"]?.some(s => ["dsa", "algorithms", "data structures"].some(k => s.toLowerCase().includes(k)));
-
     // Default flow
     let rounds = [
-        { name: "Round 1: Online Assessment", type: "Screening", focus: "Aptitude + Basic Coding", why: "To filter candidates based on basic problem solving speed." },
-        { name: "Round 2: Technical Interview 1", type: "Technical", focus: "Data Structures & Logic", why: "To test your ability to write efficient code." },
-        { name: "Round 3: Technical Interview 2", type: "Technical", focus: "System Design / Specialized Stack", why: "To assess architectural understanding and depth." },
-        { name: "Round 4: HR / Managerial", type: "Behavioral", focus: "Culture Fit", why: "To see if you align with company values." }
+        { roundTitle: "Round 1: Online Assessment", focusAreas: ["Aptitude", "Basic Coding"], whyItMatters: "To filter candidates based on basic problem solving speed." },
+        { roundTitle: "Round 2: Technical Interview 1", focusAreas: ["Data Structures", "Logic"], whyItMatters: "To test your ability to write efficient code." },
+        { roundTitle: "Round 3: Technical Interview 2", focusAreas: ["System Design", "Specialized Stack"], whyItMatters: "To assess architectural understanding and depth." },
+        { roundTitle: "Round 4: HR / Managerial", focusAreas: ["Culture Fit"], whyItMatters: "To see if you align with company values." }
     ];
 
     if (companySize === "Enterprise") {
         rounds = [
-            { name: "Round 1: Online Coding Test", type: "Screening", focus: "2-3 Medium/Hard DSA Problems", why: "High-volume filtering. Speed and correctness are key." },
-            { name: "Round 2: Technical Algo", type: "Technical", focus: "DSA Optimization & Edge Cases", why: "Verifying problem solving depth." },
-            { name: "Round 3: System Design / CS Core", type: "Technical", focus: "LLD/HLD or OS/DBMS", why: "Checking foundational engineering knowledge." },
-            { name: "Round 4: Managerial / HR", type: "Behavioral", focus: "Leadership Principles & Values", why: "Assessing long-term fit and soft skills." }
+            { roundTitle: "Round 1: Online Coding Test", focusAreas: ["2-3 Medium/Hard DSA Problems"], whyItMatters: "High-volume filtering. Speed and correctness are key." },
+            { roundTitle: "Round 2: Technical Algo", focusAreas: ["DSA Optimization", "Edge Cases"], whyItMatters: "Verifying problem solving depth." },
+            { roundTitle: "Round 3: System Design / CS Core", focusAreas: ["LLD/HLD", "OS/DBMS"], whyItMatters: "Checking foundational engineering knowledge." },
+            { roundTitle: "Round 4: Managerial / HR", focusAreas: ["Leadership Principles", "Values"], whyItMatters: "Assessing long-term fit and soft skills." }
         ];
     } else if (companySize === "Startup") {
         rounds = [
-            { name: "Round 1: Assignment / Screening", type: "Screening", focus: "Take-home task or Basic Call", why: "Proving you can build something real." },
-            { name: "Round 2: Pairing / Technical", type: "Technical", focus: "Live coding feature implementation", why: "Checking coding style, debugging, and collaboration." },
-            { name: "Round 3: Founder / Culture Fit", type: "Behavioral", focus: "Passion & Ownership", why: "Startups need self-starters who care about the mission." }
+            { roundTitle: "Round 1: Assignment / Screening", focusAreas: ["Take-home task", "Basic Call"], whyItMatters: "Proving you can build something real." },
+            { roundTitle: "Round 2: Pairing / Technical", focusAreas: ["Live coding", "Feature implementation"], whyItMatters: "Checking coding style, debugging, and collaboration." },
+            { roundTitle: "Round 3: Founder / Culture Fit", focusAreas: ["Passion", "Ownership"], whyItMatters: "Startups need self-starters who care about the mission." }
         ];
     }
 
@@ -137,10 +149,10 @@ function generateRoundMapping(companySize, skills) {
 }
 
 function generatePlan(skills) {
-    const hasReact = skills["Web"]?.some(s => s.toLowerCase().includes("react"));
-    const hasBackend = skills["Web"]?.some(s => ["node", "express", "django", "spring"].some(k => s.toLowerCase().includes(k)));
-    const hasDSA = skills["Core CS"]?.some(s => ["dsa", "algorithms", "data structures"].some(k => s.toLowerCase().includes(k)));
-    const hasCloud = skills["Cloud/DevOps"]?.length > 0;
+    const hasReact = skills.web?.some(s => s.toLowerCase().includes("react"));
+    const hasBackend = skills.web?.some(s => ["node", "express", "django", "spring"].some(k => s.toLowerCase().includes(k)));
+    const hasDSA = skills.coreCS?.some(s => ["dsa", "algorithms", "data structures"].some(k => s.toLowerCase().includes(k)));
+    const hasCloud = skills.cloud?.length > 0;
 
     return [
         { day: "Day 1-2", focus: "Basics & Core CS", tasks: ["Revise OOP concepts (Polymorphism, Inheritance)", "Brush up on DBMS normalization & indexing", "OS Basics (Process vs Thread, Deadlocks)", "Network Protocols (HTTP, TCP/IP)"] },
@@ -152,42 +164,55 @@ function generatePlan(skills) {
 }
 
 function generateChecklist(skills) {
-    const techStack = [...(skills["Web"] || []), ...(skills["Languages"] || []), ...(skills["Data"] || [])].slice(0, 3);
+    // Convert logic to return array of objects: [{ roundTitle, items[] }]
+    const techStack = [...(skills.web || []), ...(skills.languages || []), ...(skills.data || [])].slice(0, 3);
 
-    return {
-        "Round 1: Aptitude / Basics": [
-            "Quantitative Ability (Time/Work, P&C, Probability)",
-            "Logical Reasoning (Puzzles, Patterns, Series)",
-            "Verbal Ability (Reading Comprehension, Grammar)",
-            "Data Interpretation basics",
-            "Basic Computer Fundamentals",
-            "Debugging / Pseudo-code logic"
-        ],
-        "Round 2: DSA + Core CS": [
-            "Arrays, Strings, Linked Lists",
-            "Trees, Graphs, BST",
-            "Sorting & Searching Algorithms",
-            "SQL Queries (Joins, Aggregates, Normalization)",
-            "OOP Concepts (Encapsulation, Polymorphism)",
-            "OS Concepts (Threading, Memory Management)"
-        ],
-        "Round 3: Tech Interview": [
-            `Deep dive into ${techStack[0] || "primary project language"}`,
-            "Project Architecture & Challenges",
-            "API Design & Integration patterns",
-            "Database Schema & Optimization",
-            "Version Control (Git) workflows",
-            `Framework specifics (${techStack[1] || "your main framework"})`
-        ],
-        "Round 4: Managerial / HR": [
-            "Why this specific company/role?",
-            "Strengths & Weaknesses (with examples)",
-            "Project conflict resolution scenarios",
-            "Where do you see yourself in 5 years?",
-            "Salary expectations & negotiation",
-            "Questions for the interviewer"
-        ]
-    };
+    return [
+        {
+            roundTitle: "Round 1: Aptitude / Basics",
+            items: [
+                "Quantitative Ability (Time/Work, P&C, Probability)",
+                "Logical Reasoning (Puzzles, Patterns, Series)",
+                "Verbal Ability (Reading Comprehension, Grammar)",
+                "Data Interpretation basics",
+                "Basic Computer Fundamentals",
+                "Debugging / Pseudo-code logic"
+            ]
+        },
+        {
+            roundTitle: "Round 2: DSA + Core CS",
+            items: [
+                "Arrays, Strings, Linked Lists",
+                "Trees, Graphs, BST",
+                "Sorting & Searching Algorithms",
+                "SQL Queries (Joins, Aggregates, Normalization)",
+                "OOP Concepts (Encapsulation, Polymorphism)",
+                "OS Concepts (Threading, Memory Management)"
+            ]
+        },
+        {
+            roundTitle: "Round 3: Tech Interview",
+            items: [
+                `Deep dive into ${techStack[0] || "primary project language"}`,
+                "Project Architecture & Challenges",
+                "API Design & Integration patterns",
+                "Database Schema & Optimization",
+                "Version Control (Git) workflows",
+                `Framework specifics (${techStack[1] || "your main framework"})`
+            ]
+        },
+        {
+            roundTitle: "Round 4: Managerial / HR",
+            items: [
+                "Why this specific company/role?",
+                "Strengths & Weaknesses (with examples)",
+                "Project conflict resolution scenarios",
+                "Where do you see yourself in 5 years?",
+                "Salary expectations & negotiation",
+                "Questions for the interviewer"
+            ]
+        }
+    ];
 }
 
 function generateQuestions(skills) {
@@ -195,7 +220,7 @@ function generateQuestions(skills) {
 
     // Category specific banks
     const banks = {
-        "Core CS": [
+        "coreCS": [
             "Explain the four pillars of OOP with real-world examples.",
             "What is the difference between specific Process and Thread?",
             "Explain ACID properties in databases.",
@@ -203,25 +228,25 @@ function generateQuestions(skills) {
             "Difference between TCP and UDP?",
             "How does DNS resolution work?"
         ],
-        "Web": [
+        "web": [
             "Explain the difference between Local Storage, Session Storage, and Cookies.",
             "What is CORS and how do you handle it?",
             "Explain RESTful API constraints.",
             "What is the Critical Rendering Path?"
         ],
-        "Data": [
+        "data": [
             "Explain Indexing. When does it help/hurt?",
             "Write a SQL query to find the 2nd highest salary.",
             "Difference between SQL and NoSQL databases.",
             "What is Normalization? Explain 1NF, 2NF, 3NF."
         ],
-        "Cloud/DevOps": [
+        "cloud": [
             "What is Docker and how is it different from a VM?",
             "Explain CI/CD pipeline stages.",
             "What is Kubernetes used for?",
             "Explain vertical vs horizontal scaling."
         ],
-        "Languages": [
+        "languages": [
             "Explain memory management in your primary language.",
             "What are closures? (if JS)",
             "Explain pass by value vs pass by reference.",
@@ -230,20 +255,20 @@ function generateQuestions(skills) {
     };
 
     // Specific tech triggers
-    if (skills["Web"]?.some(s => s.toLowerCase().includes("react"))) {
+    if (skills.web?.some(s => s.toLowerCase().includes("react"))) {
         questions.push("Explain the Virtual DOM and diffing algorithm.");
         questions.push("What are React Hooks? Compare useEffect vs useLayoutEffect.");
         questions.push("How do you manage state in a complex React app?");
     }
-    if (skills["Web"]?.some(s => s.toLowerCase().includes("node"))) {
+    if (skills.web?.some(s => s.toLowerCase().includes("node"))) {
         questions.push("Explain the Event Loop in Node.js.");
         questions.push("Difference between process.nextTick() and setImmediate().");
     }
-    if (skills["Languages"]?.some(s => s.toLowerCase().includes("java"))) {
+    if (skills.languages?.some(s => s.toLowerCase().includes("java"))) {
         questions.push("Explain the difference between JDK, JRE, and JVM.");
         questions.push("What is the contract between hashCode() and equals()?");
     }
-    if (skills["Languages"]?.some(s => s.toLowerCase().includes("python"))) {
+    if (skills.languages?.some(s => s.toLowerCase().includes("python"))) {
         questions.push("Explain Python's GIL (Global Interpreter Lock).");
         questions.push("Difference between list and tuple in Python.");
     }
@@ -269,4 +294,6 @@ function generateQuestions(skills) {
 
     return finalQuestions.slice(0, 10);
 }
+
+
 

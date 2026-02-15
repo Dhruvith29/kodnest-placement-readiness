@@ -98,8 +98,29 @@ export default function ResultsPage() {
 
     const downloadTxt = () => {
         if (!data) return;
-        const roundText = data.roundMapping ? data.roundMapping.map(r => `${r.name} (${r.focus}) - ${r.why}`).join('\n') : "N/A";
+
+        // Handle legacy vs new RoundMapping
+        let roundText = "N/A";
+        if (data.roundMapping) {
+            roundText = data.roundMapping.map(r => {
+                // New: roundTitle, focusAreas, whyItMatters
+                // Old: name, focus, why
+                const title = r.roundTitle || r.name;
+                const focus = Array.isArray(r.focusAreas) ? r.focusAreas.join(', ') : r.focus;
+                const why = r.whyItMatters || r.why;
+                return `${title} (${focus}) - ${why}`;
+            }).join('\n');
+        }
+
         const intelText = data.companyIntel ? `Size: ${data.companyIntel.size} / ${data.companyIntel.type}\nFocus: ${data.companyIntel.focus}` : "N/A";
+
+        // Handle legacy vs new Checklist
+        let checklistText = "";
+        if (Array.isArray(data.checklist)) {
+            checklistText = data.checklist.map(c => `${c.roundTitle}:\n${c.items.map(i => `  - ${i}`).join('\n')}`).join('\n\n');
+        } else if (data.checklist) {
+            checklistText = Object.entries(data.checklist).map(([r, items]) => `${r}:\n${items.map(i => `  - ${i}`).join('\n')}`).join('\n\n');
+        }
 
         const content = `
 ANALYSIS RESULTS
@@ -112,13 +133,20 @@ COMPANY INTEL
 ${intelText}
 ------------------------------------------------
 SKILLS
-${Object.entries(data.extractedSkills).map(([cat, skills]) => `${cat}: ${skills.join(', ')}`).join('\n')}
+${Object.entries(data.extractedSkills).map(([cat, skills]) => {
+            // Standardize category names for display (e.g. coreCS -> Core CS)
+            const displayCat = cat === 'coreCS' ? 'Core CS' : cat.charAt(0).toUpperCase() + cat.slice(1);
+            return `${displayCat}: ${skills.join(', ')}`;
+        }).join('\n')}
 ------------------------------------------------
 ROUND MAPPING
 ${roundText}
 ------------------------------------------------
 7-DAY PLAN
-${data.plan.map(d => `${d.day} (${d.focus}):\n${d.tasks.map(t => `  - ${t}`).join('\n')}`).join('\n\n')}
+${data.plan7Days ? data.plan7Days.map(d => `${d.day} (${d.focus}):\n${d.tasks.map(t => `  - ${t}`).join('\n')}`).join('\n\n') : (data.plan ? data.plan.map(d => `${d.day} (${d.focus}):\n${d.tasks.map(t => `  - ${t}`).join('\n')}`).join('\n\n') : "")}
+------------------------------------------------
+CHECKLIST
+${checklistText}
 ------------------------------------------------
 QUESTIONS
 ${data.questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
@@ -142,6 +170,27 @@ ${data.questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
 
     if (!data) return null;
 
+    // Helper to normalize Rounds for display
+    const roundsToDisplay = data.roundMapping ? data.roundMapping.map(r => ({
+        title: r.roundTitle || r.name,
+        type: r.type || "Round", // Type was in old, missing in new simplified? New doesn't have 'type' in schema req, but old did.
+        // If type missing, maybe infer or omit? Old display used type. 
+        // User schema doc didn't ask for type. Let's omit or default.
+        focus: Array.isArray(r.focusAreas) ? r.focusAreas.join(' + ') : r.focus,
+        why: r.whyItMatters || r.why
+    })) : [];
+
+    // Helper to normalize Checklist for display
+    let checklistItems = [];
+    if (Array.isArray(data.checklist)) {
+        checklistItems = data.checklist;
+    } else if (data.checklist) {
+        checklistItems = Object.entries(data.checklist).map(([k, v]) => ({ roundTitle: k, items: v }));
+    }
+
+    // Helper to get Plan
+    const planData = data.plan7Days || data.plan || [];
+
     return (
         <div className="space-y-8 animate-fade-in pb-10">
             {/* Header */}
@@ -159,10 +208,10 @@ ${data.questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
                     <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
                         <div className="flex flex-col items-end">
                             <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Live Score</span>
-                            <span className="text-3xl font-bold text-primary transition-all duration-300">{data.readinessScore}/100</span>
+                            <span className="text-3xl font-bold text-primary transition-all duration-300">{data.finalScore || data.readinessScore}/100</span>
                         </div>
                         <div className="h-12 w-12 rounded-full border-4 border-primary/20 flex items-center justify-center">
-                            <div className="h-8 w-8 rounded-full bg-primary transition-all duration-500" style={{ opacity: data.readinessScore / 100 }}></div>
+                            <div className="h-8 w-8 rounded-full bg-primary transition-all duration-500" style={{ opacity: (data.finalScore || data.readinessScore) / 100 }}></div>
                         </div>
                     </div>
                 </div>
@@ -213,7 +262,9 @@ ${data.questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
                             <div className="space-y-4">
                                 {Object.entries(data.extractedSkills).map(([category, skills]) => (
                                     <div key={category}>
-                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{category}</h4>
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
+                                            {category === 'coreCS' ? 'Core CS' : category.charAt(0).toUpperCase() + category.slice(1).replace(/([A-Z])/g, ' $1').trim()}
+                                        </h4>
                                         <div className="flex flex-wrap gap-2">
                                             {skills.map((skill, idx) => {
                                                 const status = skillConfidence[skill] || 'practice';
@@ -246,12 +297,12 @@ ${data.questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
                                 <Calendar className="h-5 w-5 text-purple-500" />
                                 7-Day Preparation Plan
                             </CardTitle>
-                            <button onClick={() => copyToClipboard(data.plan.map(d => `${d.day}: ${d.focus}`).join('\n'))} className="text-gray-400 hover:text-gray-600">
+                            <button onClick={() => copyToClipboard(planData.map(d => `${d.day}: ${d.focus}`).join('\n'))} className="text-gray-400 hover:text-gray-600">
                                 <Copy className="h-4 w-4" />
                             </button>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            {data.plan.map((day, index) => (
+                            {planData.map((day, index) => (
                                 <div key={index} className="relative pl-6 border-l-2 border-gray-100 last:border-0 pb-6 last:pb-0">
                                     <div className="absolute -left-[9px] top-0 h-4 w-4 rounded-full bg-purple-100 border-2 border-purple-500"></div>
                                     <div className="mb-2">
@@ -297,7 +348,7 @@ ${data.questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
                     </Card>
 
                     {/* Round Mapping Engine (Replaces simple checklist) */}
-                    {(data.roundMapping || data.checklist) && (
+                    {roundsToDisplay.length > 0 && (
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle className="flex items-center gap-2">
@@ -307,30 +358,56 @@ ${data.questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
                             </CardHeader>
                             <CardContent className="px-2">
                                 <div className="space-y-6">
-                                    {(data.roundMapping || []).map((round, idx) => (
+                                    {roundsToDisplay.map((round, idx) => (
                                         <div key={idx} className="relative pl-8 border-l-2 border-gray-200 last:border-0 pb-6 last:pb-0">
                                             <div className="absolute -left-[9px] top-0 h-4 w-4 rounded-full bg-white border-2 border-green-500"></div>
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-xs font-bold text-green-600 uppercase tracking-wider">{round.type}</span>
-                                                <h4 className="font-bold text-gray-900">{round.name}</h4>
+                                                {/* If type exists (legacy), show it. If new schema, maybe omit or infer? */}
+                                                {round.type && <span className="text-xs font-bold text-green-600 uppercase tracking-wider">{round.type}</span>}
+                                                <h4 className="font-bold text-gray-900">{round.title}</h4>
                                                 <p className="text-sm font-medium text-gray-700">{round.focus}</p>
                                                 <p className="text-xs text-gray-500 italic mt-1">"{round.why}"</p>
                                             </div>
-                                        </div>
-                                    ))}
-                                    {/* Fallback for legacy data without roundMapping */}
-                                    {!data.roundMapping && Object.entries(data.checklist).map(([round, items], idx) => (
-                                        <div key={idx} className="pl-4">
-                                            <h4 className="font-semibold text-gray-900 text-sm mb-2">{round}</h4>
-                                            <ul className="text-sm text-gray-600 list-disc list-inside">
-                                                {items.slice(0, 3).map((it, i) => <li key={i}>{it}</li>)}
-                                            </ul>
                                         </div>
                                     ))}
                                 </div>
                                 <div className="mt-6 pt-4 border-t border-gray-100">
                                     <p className="text-xs text-center text-gray-400">Demo Mode: Company intel generated heuristically.</p>
                                 </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Checklist (If legacy or redundant, but user asked for standardized checklist schema too) 
+                       New schema has checklist array. We can display it too or relying on Round Mapping?
+                       User asked for `checklist: [{ roundTitle, items[] }]`. 
+                       Let's display it below Round Mapping if present.
+                    */}
+                    {checklistItems.length > 0 && (
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle className="flex items-center gap-2">
+                                    <CheckSquare className="h-5 w-5 text-green-500" />
+                                    Checklist
+                                </CardTitle>
+                                <button onClick={() => copyToClipboard(JSON.stringify(data.checklist, null, 2))} className="text-gray-400 hover:text-gray-600">
+                                    <Copy className="h-4 w-4" />
+                                </button>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                {checklistItems.map((c, idx) => (
+                                    <div key={idx}>
+                                        <h4 className="font-semibold text-gray-900 text-sm mb-2 pb-1 border-b border-gray-100">{c.roundTitle}</h4>
+                                        <ul className="text-sm space-y-2">
+                                            {c.items.map((item, i) => (
+                                                <li key={i} className="flex items-start gap-2 text-gray-600">
+                                                    <div className="h-1.5 w-1.5 rounded-full bg-gray-300 mt-1.5 shrink-0"></div>
+                                                    {item}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ))}
                             </CardContent>
                         </Card>
                     )}
