@@ -1,0 +1,38 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.label {
+    font-weight: 500;
+    color: var(--color-text-primary);
+    font-size: var(--text-sm);
+}
+
+.input {
+    padding: 12px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: var(--text-md);
+    font-family: var(--font-sans);
+    transition: all var(--transition-fast);
+    outline: none;
+}
+
+.input:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.error {
+    border-color: var(--color-warning);
+    /* warning color used for softer error or define error red if needed, usually warning/error */
+}
+
+.errorMessage {
+    color: #D32F2F;
+    /* Standard error red */
+    font-size: 12px;
+}

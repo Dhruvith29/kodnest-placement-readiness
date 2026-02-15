@@ -1,0 +1,47 @@
+.topBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 var(--space-lg);
+    height: 64px;
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    width: 100%;
+}
+
+.projectName {
+    font-weight: 700;
+    font-size: var(--text-sm);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.progress {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    color: var(--color-text-secondary);
+}
+
+.status {
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.notstarted {
+    background-color: #eee;
+    color: #666;
+}
+
+.inprogress {
+    background-color: #fff8e1;
+    color: #f57f17;
+}
+
+.shipped {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}

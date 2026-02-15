@@ -1,0 +1,37 @@
+.button {
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-medium);
+    font-size: var(--text-md);
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.primary {
+    background-color: var(--color-accent);
+    color: white;
+}
+
+.primary:hover {
+    background-color: #6d0000;
+    /* Darker shade for hover */
+    transform: translateY(-1px);
+}
+
+.secondary {
+    background-color: transparent;
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.secondary:hover {
+    background-color: rgba(139, 0, 0, 0.05);
+}
+
+.button:active {
+    transform: translateY(0);
+}
