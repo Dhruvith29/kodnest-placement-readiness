@@ -1,4 +1,4 @@
-export const SKILL_CATEGORIES = {
+const SKILL_CATEGORIES = {
     "Core CS": ["DSA", "OOP", "DBMS", "OS", "Networks", "Data Structures", "Algorithms", "Object Oriented", "Operating Systems", "Computer Networks"],
     "Languages": ["Java", "Python", "JavaScript", "TypeScript", "C", "C++", "C#", "Go", "Golang", "Rust"],
     "Web": ["React", "Next.js", "Node.js", "Express", "REST", "GraphQL", "HTML", "CSS", "Tailwind", "Django", "Spring"],
@@ -23,7 +23,7 @@ export function analyzeJD(text, company, role) {
 
     // Backup if empty
     if (totalSkillsFound === 0) {
-        foundSkills["General"] = ["General fresher stack", "Communication", "Aptitude"];
+        foundSkills["General"] = ["Communication", "Aptitude", "Problem Solving"];
     }
 
     // 2. Readiness Score Calculation
@@ -63,58 +63,133 @@ function generatePlan(skills) {
     const hasReact = skills["Web"]?.some(s => s.toLowerCase().includes("react"));
     const hasBackend = skills["Web"]?.some(s => ["node", "express", "django", "spring"].some(k => s.toLowerCase().includes(k)));
     const hasDSA = skills["Core CS"]?.some(s => ["dsa", "algorithms", "data structures"].some(k => s.toLowerCase().includes(k)));
+    const hasCloud = skills["Cloud/DevOps"]?.length > 0;
 
     return [
-        { day: "Day 1-2", focus: "Basics & Core CS", tasks: ["Revise OOP concepts", "Brush up on DBMS normalization & indexing", "OS Basics (Process vs Thread, Deadlocks)"] },
-        { day: "Day 3-4", focus: "DSA & Coding", tasks: [hasDSA ? "Focus on Graphs/DP/Trees" : "Practice Arrays, Strings, and Maps", "Solve 5 medium LeetCode problems", "Time & Space Complexity analysis"] },
-        { day: "Day 5", focus: "Project & Stack", tasks: [hasReact ? "Review React Lifecycle & Hooks" : "Review project architecture", hasBackend ? "API Design & REST principles" : "Database schema optimization", "Align resume projects with JD"] },
+        { day: "Day 1-2", focus: "Basics & Core CS", tasks: ["Revise OOP concepts (Polymorphism, Inheritance)", "Brush up on DBMS normalization & indexing", "OS Basics (Process vs Thread, Deadlocks)", "Network Protocols (HTTP, TCP/IP)"] },
+        { day: "Day 3-4", focus: "DSA & Coding", tasks: [hasDSA ? "Focus on Graphs/DP/Trees" : "Practice Arrays, Strings, and Maps", "Solve 5 medium LeetCode problems", "Time & Space Complexity analysis", "Implement standard algorithms (Merge Sort, Binary Search)"] },
+        { day: "Day 5", focus: "Project & Stack", tasks: [hasReact ? "Review React Lifecycle & Hooks" : "Review project architecture", hasBackend ? "API Design & REST principles" : "Database schema optimization", "Align resume projects with JD", hasCloud ? "Review Docker/CI-CD pipelines" : "Check deployment basics"] },
         { day: "Day 6", focus: "Mock Interviews", tasks: ["Behavioral questions (STAR method)", "System Design basic blocks (LB, Caching, DB)", "Peer mock interview"] },
         { day: "Day 7", focus: "Revision", tasks: ["Review weak areas from mocks", "Quick formula revision (Aptitude)", "Final resume polish"] }
     ];
 }
 
 function generateChecklist(skills) {
+    const techStack = [...(skills["Web"] || []), ...(skills["Languages"] || []), ...(skills["Data"] || [])].slice(0, 3);
+
     return {
-        "Round 1: Aptitude": ["Quantitative Ability (Time/Work, P&C)", "Logical Reasoning (Puzzles, Patterns)", "Verbal Ability (Reading Comprehension)"],
-        "Round 2: Technical/DSA": ["Arrays & Linked Lists", "Trees & Graphs", "Sorting & Searching", "SQL Queries (Joins, Aggregates)", "OOP Implementation"],
-        "Round 3: System Design / Stack": ["Scalability basics", "API Integration", "Database Design", ...((skills["Web"] || []).slice(0, 2))],
-        "Round 4: HR / Managerial": ["Why this company?", "Strengths & Weaknesses", "Project challenges & conflict resolution", "Salary expectations"]
+        "Round 1: Aptitude / Basics": [
+            "Quantitative Ability (Time/Work, P&C, Probability)",
+            "Logical Reasoning (Puzzles, Patterns, Series)",
+            "Verbal Ability (Reading Comprehension, Grammar)",
+            "Data Interpretation basics",
+            "Basic Computer Fundamentals",
+            "Debugging / Pseudo-code logic"
+        ],
+        "Round 2: DSA + Core CS": [
+            "Arrays, Strings, Linked Lists",
+            "Trees, Graphs, BST",
+            "Sorting & Searching Algorithms",
+            "SQL Queries (Joins, Aggregates, Normalization)",
+            "OOP Concepts (Encapsulation, Polymorphism)",
+            "OS Concepts (Threading, Memory Management)"
+        ],
+        "Round 3: Tech Interview": [
+            `Deep dive into ${techStack[0] || "primary project language"}`,
+            "Project Architecture & Challenges",
+            "API Design & Integration patterns",
+            "Database Schema & Optimization",
+            "Version Control (Git) workflows",
+            `Framework specifics (${techStack[1] || "your main framework"})`
+        ],
+        "Round 4: Managerial / HR": [
+            "Why this specific company/role?",
+            "Strengths & Weaknesses (with examples)",
+            "Project conflict resolution scenarios",
+            "Where do you see yourself in 5 years?",
+            "Salary expectations & negotiation",
+            "Questions for the interviewer"
+        ]
     };
 }
 
 function generateQuestions(skills) {
     const questions = [];
 
-    // General
-    questions.push("Tell me about yourself.");
+    // Category specific banks
+    const banks = {
+        "Core CS": [
+            "Explain the four pillars of OOP with real-world examples.",
+            "What is the difference between specific Process and Thread?",
+            "Explain ACID properties in databases.",
+            "What is a deadlock and how do you prevent it?",
+            "Difference between TCP and UDP?",
+            "How does DNS resolution work?"
+        ],
+        "Web": [
+            "Explain the difference between Local Storage, Session Storage, and Cookies.",
+            "What is CORS and how do you handle it?",
+            "Explain RESTful API constraints.",
+            "What is the Critical Rendering Path?"
+        ],
+        "Data": [
+            "Explain Indexing. When does it help/hurt?",
+            "Write a SQL query to find the 2nd highest salary.",
+            "Difference between SQL and NoSQL databases.",
+            "What is Normalization? Explain 1NF, 2NF, 3NF."
+        ],
+        "Cloud/DevOps": [
+            "What is Docker and how is it different from a VM?",
+            "Explain CI/CD pipeline stages.",
+            "What is Kubernetes used for?",
+            "Explain vertical vs horizontal scaling."
+        ],
+        "Languages": [
+            "Explain memory management in your primary language.",
+            "What are closures? (if JS)",
+            "Explain pass by value vs pass by reference.",
+            "How does Garbage Collection work?"
+        ]
+    };
 
-    if (skills["Data"]?.some(s => s.toLowerCase().includes("sql"))) {
-        questions.push("Explain indexing in databases. When does it help and when does it hurt?");
-        questions.push("Write a SQL query to find the 2nd highest salary.");
-    }
-
+    // Specific tech triggers
     if (skills["Web"]?.some(s => s.toLowerCase().includes("react"))) {
-        questions.push("Explain the Virtual DOM and how React handles state updates.");
-        questions.push("What are React Hooks? Explain useEffect and useMemo.");
+        questions.push("Explain the Virtual DOM and diffing algorithm.");
+        questions.push("What are React Hooks? Compare useEffect vs useLayoutEffect.");
+        questions.push("How do you manage state in a complex React app?");
     }
-
     if (skills["Web"]?.some(s => s.toLowerCase().includes("node"))) {
         questions.push("Explain the Event Loop in Node.js.");
+        questions.push("Difference between process.nextTick() and setImmediate().");
+    }
+    if (skills["Languages"]?.some(s => s.toLowerCase().includes("java"))) {
+        questions.push("Explain the difference between JDK, JRE, and JVM.");
+        questions.push("What is the contract between hashCode() and equals()?");
+    }
+    if (skills["Languages"]?.some(s => s.toLowerCase().includes("python"))) {
+        questions.push("Explain Python's GIL (Global Interpreter Lock).");
+        questions.push("Difference between list and tuple in Python.");
     }
 
-    if (skills["Core CS"]?.some(s => s.toLowerCase().includes("oop"))) {
-        questions.push("Explain the four pillars of OOP with real-world examples.");
-        questions.push("What is the difference between an Abstract Class and an Interface?");
-    }
+    // Add generic category questions if categories exist
+    Object.keys(skills).forEach(cat => {
+        if (banks[cat]) {
+            questions.push(...banks[cat].slice(0, 2));
+        }
+    });
 
-    // Fillers if few skills found
-    if (questions.length < 10) {
-        questions.push("Describe a challenging bug you fixed recently.");
-        questions.push("How do you ensure code quality in your projects?");
-        questions.push("Where do you see yourself in 5 years?");
-        questions.push("Explain the difference between TCP and UDP.");
-        questions.push("What is a deadlock and how do you prevent it?");
-    }
+    // Fillers if specific questions are too few
+    const filler = [
+        "Tell me about yourself and your background.",
+        "Describe a challenging bug you fixed recently.",
+        "How do you ensure code quality in your projects?",
+        "Design a URL shortening service (System Design basic).",
+        "What is your preferred development environment setup?"
+    ];
 
-    return questions.slice(0, 10);
+    // Combine and Deduplicate
+    const finalQuestions = Array.from(new Set([...questions, ...filler]));
+
+    return finalQuestions.slice(0, 10);
 }
+
