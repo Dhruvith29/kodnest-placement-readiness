@@ -10,6 +10,7 @@ import HistoryPage from './pages/HistoryPage';
 import ProfilePage from './pages/ProfilePage';
 import TestPage from './pages/TestPage';
 import ShipPage from './pages/ShipPage';
+import ProofPage from './pages/ProofPage';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="/dashboard/profile" element={<ProfilePage />} />
           <Route path="/prp/07-test" element={<TestPage />} />
           <Route path="/prp/08-ship" element={<ShipPage />} />
+          <Route path="/prp/proof" element={<ProofPage />} />
         </Route>
 
         {/* Fallback route */}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '../components/ui/Card';
-import { Lock, Rocket, CheckCircle2 } from 'lucide-react';
+import { Lock, Rocket, CheckCircle2, ArrowRight } from 'lucide-react';
 
 const STORAGE_KEY = 'prp_test_checklist';
 const REQUIRED_COUNT = 10;
@@ -73,6 +73,15 @@ export default function ShipPage() {
                         <p className="text-indigo-600 font-semibold mt-1">v1.2.0 (Hardened)</p>
                     </CardContent>
                 </Card>
+            </div>
+
+            <div className="flex justify-center mt-8">
+                <Link
+                    to="/prp/proof"
+                    className="inline-flex items-center px-8 py-4 text-lg font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-lg transform hover:scale-105 transition-all"
+                >
+                    Proceed to Final Submission <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
             </div>
         </div>
     );
