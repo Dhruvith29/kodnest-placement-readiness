@@ -5,6 +5,26 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
 
     const { personal, summary, education, experience, projects, skills, links } = data;
 
+    // Helper to normalize skills data
+    const getSkillGroups = () => {
+        if (!skills) return [];
+        if (typeof skills === 'string') return [{ category: 'Skills', items: skills.split(',').filter(s => s.trim()) }];
+        return [
+            { category: 'Technical', items: skills.technical },
+            { category: 'Soft Skills', items: skills.soft },
+            { category: 'Tools', items: skills.tools }
+        ].filter(g => g.items && g.items.length > 0);
+    };
+
+    const skillGroups = getSkillGroups();
+
+    // Helper for Tech Stack
+    const getTechStack = (proj) => {
+        if (Array.isArray(proj.techStack)) return proj.techStack;
+        if (typeof proj.tech === 'string') return proj.tech.split(',').filter(s => s.trim());
+        return [];
+    };
+
     // --- Layout Variants ---
 
     // 1. Classic: Centered header, heavy border dividers, serif accents
@@ -54,25 +74,39 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
                 <section className="mb-6">
                     <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-4 border-b border-gray-300 pb-1">Projects</h2>
                     <div className="space-y-4">
-                        {projects.map((proj, idx) => (
-                            <div key={idx}>
-                                <div className="flex justify-between items-baseline mb-1 font-sans">
-                                    <h3 className="font-bold text-gray-900">{proj.name}</h3>
-                                    <span className="text-xs text-gray-600">{proj.tech}</span>
+                        {projects.map((proj, idx) => {
+                            const stack = getTechStack(proj);
+                            return (
+                                <div key={idx}>
+                                    <div className="flex justify-between items-baseline mb-1 font-sans">
+                                        <div className="flex items-baseline gap-2">
+                                            <h3 className="font-bold text-gray-900">{proj.name}</h3>
+                                            {stack.length > 0 && <span className="text-xs text-gray-500 italic">({stack.join(', ')})</span>}
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-gray-700 font-sans">{proj.description}</p>
+                                    <div className="flex gap-3 mt-1 font-sans text-xs">
+                                        {proj.link && <a href={proj.link} className="text-gray-500 hover:text-black underline">Live Demo</a>}
+                                        {proj.github && <a href={proj.github} className="text-gray-500 hover:text-black underline">GitHub</a>}
+                                    </div>
                                 </div>
-                                <p className="text-sm text-gray-700 font-sans">{proj.description}</p>
-                                {proj.link && <a href={proj.link} className="text-xs text-gray-500 hover:text-black underline mt-0.5 block font-sans">{proj.link}</a>}
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </section>
             )}
 
             {/* Skills */}
-            {skills && skills.trim().length > 0 && (
+            {skillGroups.length > 0 && (
                 <section className="mb-6">
                     <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-2 border-b border-gray-300 pb-1">Technical Skills</h2>
-                    <p className="text-sm text-gray-800 font-sans">{skills}</p>
+                    <div className="space-y-1 font-sans text-sm">
+                        {skillGroups.map((grp, idx) => (
+                            <div key={idx}>
+                                <span className="font-bold text-gray-800">{grp.category}:</span> {grp.items.join(', ')}
+                            </div>
+                        ))}
+                    </div>
                 </section>
             )}
 
@@ -142,29 +176,48 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
                 <section className="mb-8">
                     <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Projects</h2>
                     <div className="grid grid-cols-1 gap-4">
-                        {projects.map((proj, idx) => (
-                            <div key={idx} className="bg-gray-50 p-4 rounded-lg">
-                                <div className="flex justify-between items-baseline mb-2">
-                                    <h3 className="font-bold text-gray-900">{proj.name}</h3>
-                                    <span className="text-xs bg-gray-200 px-2 py-0.5 rounded text-gray-600">{proj.tech}</span>
+                        {projects.map((proj, idx) => {
+                            const stack = getTechStack(proj);
+                            return (
+                                <div key={idx} className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                    <div className="flex justify-between items-baseline mb-2">
+                                        <h3 className="font-bold text-gray-900">{proj.name}</h3>
+                                        <div className="flex gap-2">
+                                            {proj.link && <a href={proj.link} className="text-xs text-indigo-600 hover:text-indigo-800">Live</a>}
+                                            {proj.github && <a href={proj.github} className="text-xs text-indigo-600 hover:text-indigo-800">Code</a>}
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-gray-700 mb-3">{proj.description}</p>
+                                    <div className="flex flex-wrap gap-1">
+                                        {stack.map((t, i) => (
+                                            <span key={i} className="text-[10px] uppercase font-semibold tracking-wide bg-white border border-gray-200 px-2 py-0.5 rounded text-gray-600">
+                                                {t}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
-                                <p className="text-sm text-gray-700 mb-2">{proj.description}</p>
-                                {proj.link && <a href={proj.link} className="text-xs text-indigo-600 hover:text-indigo-800">{proj.link}</a>}
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </section>
             )}
 
             {/* Skills */}
-            {skills && skills.trim().length > 0 && (
+            {skillGroups.length > 0 && (
                 <section className="mb-8">
                     <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Skills</h2>
-                    <div className="flex flex-wrap gap-2">
-                        {skills.split(',').map((s, i) => (
-                            <span key={i} className="text-xs border border-gray-200 px-2 py-1 rounded-sm text-gray-700">
-                                {s.trim()}
-                            </span>
+                    <div className="space-y-3">
+                        {skillGroups.map((grp, idx) => (
+                            <div key={idx} className="flex flex-col gap-1">
+                                <span className="text-xs font-semibold text-gray-500 uppercase">{grp.category}</span>
+                                <div className="flex flex-wrap gap-2">
+                                    {grp.items.map((s, i) => (
+                                        <span key={i} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                                            {s}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
                         ))}
                     </div>
                 </section>
@@ -237,10 +290,15 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
                                 <div key={idx}>
                                     <div className="flex justify-between mb-1">
                                         <div className="font-medium text-gray-900">{proj.name}</div>
-                                        <div className="font-mono text-xs text-gray-400">{proj.tech}</div>
+                                        <div className="font-mono text-xs text-gray-400 flex gap-2">
+                                            {getTechStack(proj).join(' / ')}
+                                        </div>
                                     </div>
                                     <div className="text-gray-600 opacity-90 mb-1">{proj.description}</div>
-                                    {proj.link && <div className="font-mono text-xs text-gray-400 underline">{proj.link}</div>}
+                                    <div className="flex gap-4">
+                                        {proj.link && <a href={proj.link} className="font-mono text-xs text-gray-400 underline">live</a>}
+                                        {proj.github && <a href={proj.github} className="font-mono text-xs text-gray-400 underline">code</a>}
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -248,11 +306,16 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
                 )}
 
                 {/* Skills */}
-                {skills && skills.trim().length > 0 && (
+                {skillGroups.length > 0 && (
                     <>
                         <div className="text-xs text-gray-400 font-mono pt-1">skills</div>
-                        <div className="mb-8 text-gray-800">
-                            {skills}
+                        <div className="mb-8 space-y-2">
+                            {skillGroups.map((grp, idx) => (
+                                <div key={idx} className="text-gray-800">
+                                    <span className="text-gray-400 text-xs lowercase mr-2">{grp.category}:</span>
+                                    {grp.items.join(', ')}
+                                </div>
+                            ))}
                         </div>
                     </>
                 )}

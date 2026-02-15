@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Layout, Eye, Download, Save, RefreshCw, CheckCircle2, TrendingUp, AlertCircle, Palette, ChevronRight } from 'lucide-react';
+import { Layout, Eye, Download, Save, RefreshCw, CheckCircle2, TrendingUp, AlertCircle, Palette, ChevronRight, Plus, X, Sparkles, ChevronDown, ChevronUp, Github, ExternalLink, Trash2, Loader2 } from 'lucide-react';
 import ResumePreviewComponent from '../../components/resume/ResumePreviewComponent';
 
 // Initial Empty State
@@ -10,9 +10,9 @@ const INITIAL_STATE = {
     education: [],
     experience: [],
     projects: [],
-    skills: '',
+    skills: { technical: [], soft: [], tools: [] }, // New Structure
     links: { linkedin: '', github: '' },
-    template: 'classic' // classic, modern, minimal
+    template: 'classic'
 };
 
 // Sample Data
@@ -23,7 +23,7 @@ const SAMPLE_DATA = {
         phone: '+1 (555) 123-4567',
         location: 'San Francisco, CA'
     },
-    summary: 'Full-stack developer with 5+ years of experience building scalable web applications. Passionate about clean code, user experience, and AI integration. Proven track record of delivering high-quality software solutions in agile environments. Committed to continuous learning and staying updated with emerging technologies.',
+    summary: 'Full-stack developer with 5+ years of experience building scalable web applications. Passionate about clean code, user experience, and AI integration.',
     education: [
         { school: 'University of Technology', degree: 'B.S. Computer Science', year: '2020' }
     ],
@@ -33,31 +33,24 @@ const SAMPLE_DATA = {
             company: 'TechCorp Inc.',
             duration: '2022 - Present',
             description: 'Led development of core SaaS platform features using React and Node.js. Improved system performance by 40% through optimization.'
-        },
-        {
-            role: 'Frontend Developer',
-            company: 'WebSolutions',
-            duration: '2020 - 2022',
-            description: 'Built responsive UI components and implemented modern design systems. Collaborated with UX team to redesign client portal.'
         }
     ],
     projects: [
         {
             name: 'AI Resume Builder',
-            tech: 'React, Tailwind, OpenAI API',
+            techStack: ['React', 'Tailwind', 'OpenAI'],
             description: 'A premium tool for generating professional resumes instantly. Integrated with 3rd party APIs for real-time analysis.',
-            link: 'https://github.com/alex/resume-builder'
-        },
-        {
-            name: 'E-commerce Dashboard',
-            tech: 'Vue.js, Firebase',
-            description: 'Designed and implemented a real-time analytics dashboard for online retailers. Visualized sales data using D3.js, increasing data accessibility by 25%.',
-            link: 'https://github.com/alex/dashboard'
+            link: 'https://resume.io',
+            github: 'https://github.com/alex/resume'
         }
     ],
-    skills: 'JavaScript (ES6+), React, Node.js, Python, TypeScript, Tailwind CSS, SQL, Git, AWS',
+    skills: {
+        technical: ['JavaScript', 'React', 'Node.js', 'Python'],
+        soft: ['Leadership', 'Communication'],
+        tools: ['Git', 'Docker', 'AWS']
+    },
     links: { linkedin: 'linkedin.com/in/alexdev', github: 'github.com/alexdev' },
-    template: 'classic'
+    template: 'modern'
 };
 
 const ACTION_VERBS = [
@@ -70,8 +63,20 @@ export default function ResumeBuilder() {
     // 1) Auto-save data
     const [resumeData, setResumeData] = useState(() => {
         const saved = localStorage.getItem('resumeBuilderData');
-        return saved ? JSON.parse(saved) : INITIAL_STATE;
+        try {
+            const parsed = saved ? JSON.parse(saved) : INITIAL_STATE;
+            // Legacy check: if skills is string, convert to object
+            if (typeof parsed.skills === 'string') {
+                parsed.skills = { technical: parsed.skills.split(',').filter(Boolean), soft: [], tools: [] };
+            }
+            return parsed;
+        } catch (e) {
+            return INITIAL_STATE;
+        }
     });
+
+    const [isSuggesting, setIsSuggesting] = useState(false);
+    const [expandedProject, setExpandedProject] = useState(0);
 
     // Save to localStorage
     useEffect(() => {
@@ -103,10 +108,11 @@ export default function ResumeBuilder() {
     };
 
     const addArrayItem = (section, template) => {
-        setResumeData(prev => ({
-            ...prev,
-            [section]: [...prev[section], template]
-        }));
+        setResumeData(prev => {
+            const newArray = [...prev[section], template];
+            if (section === 'projects') setExpandedProject(newArray.length - 1);
+            return { ...prev, [section]: newArray };
+        });
     };
 
     const removeArrayItem = (section, index) => {
@@ -118,6 +124,69 @@ export default function ResumeBuilder() {
 
     const setTemplate = (tpl) => {
         setResumeData(prev => ({ ...prev, template: tpl }));
+    };
+
+    // --- Skills Logic ---
+    const addSkill = (category, skill) => {
+        const trimmed = skill.trim();
+        if (!trimmed) return;
+        if (resumeData.skills[category].includes(trimmed)) return;
+
+        setResumeData(prev => ({
+            ...prev,
+            skills: {
+                ...prev.skills,
+                [category]: [...prev.skills[category], trimmed]
+            }
+        }));
+    };
+
+    const removeSkill = (category, skillToRemove) => {
+        setResumeData(prev => ({
+            ...prev,
+            skills: {
+                ...prev.skills,
+                [category]: prev.skills[category].filter(s => s !== skillToRemove)
+            }
+        }));
+    };
+
+    const handleSuggestSkills = () => {
+        setIsSuggesting(true);
+        setTimeout(() => {
+            setResumeData(prev => ({
+                ...prev,
+                skills: {
+                    technical: [...new Set([...prev.skills.technical, "TypeScript", "React", "Node.js", "PostgreSQL", "GraphQL"])],
+                    soft: [...new Set([...prev.skills.soft, "Team Leadership", "Problem Solving"])],
+                    tools: [...new Set([...prev.skills.tools, "Git", "Docker", "AWS"])]
+                }
+            }));
+            setIsSuggesting(false);
+        }, 1000);
+    };
+
+    // --- Project Tags Logic ---
+    const addProjectTag = (index, tag) => {
+        const trimmed = tag.trim();
+        if (!trimmed) return;
+        setResumeData(prev => {
+            const newProjects = [...prev.projects];
+            const currentTags = newProjects[index].techStack || [];
+            if (!currentTags.includes(trimmed)) {
+                newProjects[index] = { ...newProjects[index], techStack: [...currentTags, trimmed] };
+            }
+            return { ...prev, projects: newProjects };
+        });
+    };
+
+    const removeProjectTag = (index, tagToRemove) => {
+        setResumeData(prev => {
+            const newProjects = [...prev.projects];
+            const currentTags = newProjects[index].techStack || [];
+            newProjects[index] = { ...newProjects[index], techStack: currentTags.filter(t => t !== tagToRemove) };
+            return { ...prev, projects: newProjects };
+        });
     };
 
     // Helper: Bullet Analysis
@@ -149,56 +218,33 @@ export default function ResumeBuilder() {
         let score = 0;
         let improvs = [];
 
-        // Base Score (Structure)
         if (resumeData.personal.name && resumeData.personal.email) score += 20;
 
-        // Summary Length
         const summaryWords = resumeData.summary.trim().split(/\s+/).filter(Boolean).length;
-        if (summaryWords >= 40 && summaryWords <= 120) {
-            score += 15;
-        } else if (summaryWords < 40) {
-            improvs.push("Expand summary to 40-120 words.");
-        }
+        if (summaryWords >= 40) score += 15;
+        else improvs.push("Expand summary to 40+ words.");
 
-        // Projects
-        if (resumeData.projects.length >= 2) {
-            score += 10;
-        } else {
-            improvs.push(`Add ${2 - resumeData.projects.length} more project(s).`);
-        }
+        if (resumeData.projects.length >= 2) score += 10;
+        else improvs.push(`Add ${2 - resumeData.projects.length} more project(s).`);
 
-        // Experience
-        if (resumeData.experience.length >= 1) {
-            score += 10;
-        } else {
-            improvs.push("Add at least 1 experience entry (internships count!).");
-        }
+        if (resumeData.experience.length >= 1) score += 10;
+        else improvs.push("Add at least 1 experience entry.");
 
-        // Skills
-        const skillList = resumeData.skills.split(',').filter(s => s.trim().length > 0);
-        if (skillList.length >= 8) {
-            score += 10;
-        } else {
-            improvs.push("Add more skills (target 8+).");
-        }
+        // Skills Check (Sum of all categories)
+        const totalSkills = (resumeData.skills.technical?.length || 0) +
+            (resumeData.skills.soft?.length || 0) +
+            (resumeData.skills.tools?.length || 0);
 
-        // Links
+        if (totalSkills >= 8) score += 10;
+        else improvs.push("Add more skills (target 8+ total).");
+
         if (resumeData.links.github || resumeData.links.linkedin) score += 10;
 
-        // Numbers in bullets
-        const hasNumbers = [...resumeData.experience, ...resumeData.projects].some(item => {
-            const text = item.description || "";
-            return /\d+|%|\b[XkM]\b/.test(text);
-        });
+        const hasNumbers = [...resumeData.experience].some(item => /\d+|%|\b[XkM]\b/.test(item.description || ""));
+        if (hasNumbers) score += 15;
+        else improvs.push("Add numbers/metrics to experience.");
 
-        if (hasNumbers) {
-            score += 15;
-        } else {
-            improvs.push("Add measurable impact (numbers/%) to bullets.");
-        }
-
-        // Education
-        const hasEducation = resumeData.education.some(edu => edu.school && edu.degree && edu.year);
+        const hasEducation = resumeData.education.length > 0;
         if (hasEducation) score += 10;
 
         return {
@@ -207,11 +253,23 @@ export default function ResumeBuilder() {
         };
     }, [resumeData]);
 
-    const getScoreColor = (s) => {
-        if (s >= 80) return 'text-green-600 bg-green-50 border-green-200';
-        if (s >= 50) return 'text-amber-600 bg-amber-50 border-amber-200';
-        return 'text-red-600 bg-red-50 border-red-200';
-    };
+    const getScoreColor = (s) => s >= 80 ? 'text-green-600 bg-green-50 border-green-200' : s >= 50 ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-red-600 bg-red-50 border-red-200';
+
+    // -- Sub-Components --
+    const TagInput = ({ placeholder, onAdd }) => (
+        <input
+            type="text"
+            placeholder={placeholder}
+            className="flex-1 p-2 bg-transparent outline-none text-sm min-w-[120px]"
+            onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    onAdd(e.target.value);
+                    e.target.value = '';
+                }
+            }}
+        />
+    );
 
     return (
         <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
@@ -229,8 +287,8 @@ export default function ResumeBuilder() {
                                     key={t}
                                     onClick={() => setTemplate(t)}
                                     className={`px-3 py-1 text-xs font-medium rounded-md capitalize transition-all ${(resumeData.template || 'classic') === t
-                                            ? 'bg-white text-black shadow-sm'
-                                            : 'text-gray-500 hover:text-gray-900'
+                                        ? 'bg-white text-black shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-900'
                                         }`}
                                 >
                                     {t}
@@ -314,66 +372,120 @@ export default function ResumeBuilder() {
                         })}
                     </section>
 
-                    {/* Projects */}
-                    <section className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-sm font-bold uppercase tracking-wider text-gray-400">Projects</h2>
-                            <button onClick={() => addArrayItem('projects', { name: '', tech: '', description: '', link: '' })} className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">+ Add Project</button>
+                    {/* Skills Section (NEW) */}
+                    <section className="space-y-6">
+                        <div className="flex justify-between items-end border-b border-gray-100 pb-2">
+                            <h2 className="text-sm font-bold uppercase tracking-wider text-gray-400">Skills</h2>
+                            <button
+                                onClick={handleSuggestSkills}
+                                disabled={isSuggesting}
+                                className="text-xs flex items-center gap-1 text-indigo-600 font-medium hover:text-indigo-800 disabled:opacity-50"
+                            >
+                                {isSuggesting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                                Suggest Skills
+                            </button>
                         </div>
-                        {resumeData.projects.map((proj, idx) => {
-                            const warnings = analyzeBullet(proj.description);
-                            return (
-                                <div key={idx} className="p-4 border border-gray-100 rounded-lg space-y-3 relative group">
-                                    <button onClick={() => removeArrayItem('projects', idx)} className="absolute top-2 right-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">×</button>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <input type="text" placeholder="Project Name" value={proj.name} onChange={(e) => handleArrayChange('projects', idx, 'name', e.target.value)} className="p-2 border rounded bg-gray-50 text-sm w-full" />
-                                        <input type="text" placeholder="Tech Stack" value={proj.tech} onChange={(e) => handleArrayChange('projects', idx, 'tech', e.target.value)} className="p-2 border rounded bg-gray-50 text-sm w-full" />
-                                    </div>
-                                    <textarea placeholder="Description..." value={proj.description} onChange={(e) => handleArrayChange('projects', idx, 'description', e.target.value)} className="p-2 border rounded bg-gray-50 text-sm w-full h-24 resize-none" />
 
-                                    {/* Bullet Guidance */}
-                                    {warnings.length > 0 && (
-                                        <div className="bg-amber-50 border border-amber-100 rounded p-2 text-xs text-amber-800 space-y-1">
-                                            {warnings.slice(0, 2).map((w, i) => (
-                                                <div key={i} className="flex gap-1.5">
-                                                    <span className="shrink-0 mt-0.5">💡</span>
-                                                    <span>{w.msg}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                    <input type="text" placeholder="Link URL" value={proj.link} onChange={(e) => handleArrayChange('projects', idx, 'link', e.target.value)} className="p-2 border rounded bg-gray-50 text-sm w-full" />
-                                </div>
-                            );
-                        })}
-                    </section>
-
-                    {/* Education */}
-                    <section className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-sm font-bold uppercase tracking-wider text-gray-400">Education</h2>
-                            <button onClick={() => addArrayItem('education', { school: '', degree: '', year: '' })} className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">+ Add Education</button>
-                        </div>
-                        {resumeData.education.map((edu, idx) => (
-                            <div key={idx} className="p-4 border border-gray-100 rounded-lg space-y-3 relative group">
-                                <button onClick={() => removeArrayItem('education', idx)} className="absolute top-2 right-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">×</button>
-                                <input type="text" placeholder="School / University" value={edu.school} onChange={(e) => handleArrayChange('education', idx, 'school', e.target.value)} className="p-2 border rounded bg-gray-50 text-sm w-full" />
-                                <div className="grid grid-cols-2 gap-3">
-                                    <input type="text" placeholder="Degree" value={edu.degree} onChange={(e) => handleArrayChange('education', idx, 'degree', e.target.value)} className="p-2 border rounded bg-gray-50 text-sm w-full" />
-                                    <input type="text" placeholder="Year" value={edu.year} onChange={(e) => handleArrayChange('education', idx, 'year', e.target.value)} className="p-2 border rounded bg-gray-50 text-sm w-full" />
+                        {['technical', 'soft', 'tools'].map(cat => (
+                            <div key={cat} className="space-y-2">
+                                <label className="text-xs font-semibold uppercase text-gray-500 flex justify-between">
+                                    {cat === 'technical' ? 'Technical Skills' : cat === 'soft' ? 'Soft Skills' : 'Tools & Technologies'}
+                                    <span className="text-gray-400 font-normal">({resumeData.skills[cat]?.length || 0})</span>
+                                </label>
+                                <div className="min-h-[42px] p-2 border rounded-lg bg-gray-50 focus-within:bg-white focus-within:ring-1 focus-within:ring-black transition-all flex flex-wrap gap-2">
+                                    {resumeData.skills[cat]?.map((skill, i) => (
+                                        <span key={i} className="inline-flex items-center gap-1 bg-white border border-gray-200 px-2 py-1 rounded text-xs font-medium text-gray-700">
+                                            {skill}
+                                            <button onClick={() => removeSkill(cat, skill)} className="text-gray-400 hover:text-red-500"><X className="h-3 w-3" /></button>
+                                        </span>
+                                    ))}
+                                    <TagInput
+                                        placeholder={`Add ${cat} skill... (Enter)`}
+                                        onAdd={(val) => addSkill(cat, val)}
+                                    />
                                 </div>
                             </div>
                         ))}
                     </section>
-                    {/* Skills */}
+
+                    {/* Projects Section (NEW Accordion) */}
                     <section className="space-y-4">
-                        <h2 className="text-sm font-bold uppercase tracking-wider text-gray-400">Skills</h2>
-                        <textarea
-                            value={resumeData.skills}
-                            onChange={(e) => setResumeData(prev => ({ ...prev, skills: e.target.value }))}
-                            placeholder="Comma separated skills (e.g. React, Node.js, Python)..."
-                            className="w-full p-3 border rounded-lg bg-gray-50 focus:bg-white focus:ring-1 focus:ring-black outline-none transition-all h-20 resize-none"
-                        />
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-sm font-bold uppercase tracking-wider text-gray-400">Projects</h2>
+                            <button onClick={() => addArrayItem('projects', { name: 'New Project', techStack: [], description: '' })} className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
+                                <Plus className="h-3 w-3" /> Add Project
+                            </button>
+                        </div>
+                        <div className="space-y-3">
+                            {resumeData.projects.map((proj, idx) => {
+                                const isExpanded = expandedProject === idx;
+                                const descLen = proj.description?.length || 0;
+                                return (
+                                    <div key={idx} className={`border rounded-lg transition-all ${isExpanded ? 'border-gray-300 bg-white shadow-sm' : 'border-gray-100 bg-gray-50 hover:border-gray-200'}`}>
+                                        <div
+                                            className="flex justify-between items-center p-4 cursor-pointer"
+                                            onClick={() => setExpandedProject(isExpanded ? null : idx)}
+                                        >
+                                            <div className="font-semibold text-sm text-gray-800">{proj.name || 'Untitled Project'}</div>
+                                            <div className="flex items-center gap-3">
+                                                <button onClick={(e) => { e.stopPropagation(); removeArrayItem('projects', idx); }} className="text-gray-400 hover:text-red-500">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                                {isExpanded ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
+                                            </div>
+                                        </div>
+
+                                        {isExpanded && (
+                                            <div className="p-4 pt-0 space-y-4 border-t border-gray-100 mt-2">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Project Title"
+                                                    value={proj.name}
+                                                    onChange={(e) => handleArrayChange('projects', idx, 'name', e.target.value)}
+                                                    className="w-full p-2 border rounded bg-gray-50 focus:bg-white outline-none text-sm font-bold"
+                                                />
+
+                                                {/* Tech Stack Tags */}
+                                                <div>
+                                                    <label className="text-xs font-semibold text-gray-500 mb-1 block">Tech Stack</label>
+                                                    <div className="flex flex-wrap gap-2 p-2 border rounded bg-gray-50 focus-within:bg-white min-h-[38px]">
+                                                        {(proj.techStack || []).map((tag, tIdx) => (
+                                                            <span key={tIdx} className="inline-flex items-center gap-1 bg-white border px-2 py-0.5 rounded text-xs">
+                                                                {tag}
+                                                                <button onClick={() => removeProjectTag(idx, tag)} className="hover:text-red-500"><X className="h-3 w-3" /></button>
+                                                            </span>
+                                                        ))}
+                                                        <TagInput placeholder="Add tech... (Enter)" onAdd={(val) => addProjectTag(idx, val)} />
+                                                    </div>
+                                                </div>
+
+                                                <div className="relative">
+                                                    <textarea
+                                                        placeholder="Project Description (Max 200 chars)..."
+                                                        value={proj.description}
+                                                        maxLength={200}
+                                                        onChange={(e) => handleArrayChange('projects', idx, 'description', e.target.value)}
+                                                        className="w-full p-2 border rounded bg-gray-50 focus:bg-white outline-none text-sm h-24 resize-none"
+                                                    />
+                                                    <div className={`text-xs text-right mt-1 ${descLen >= 200 ? 'text-red-500' : 'text-gray-400'}`}>{descLen}/200</div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div className="flex items-center gap-2 border rounded p-2 bg-gray-50">
+                                                        <ExternalLink className="h-4 w-4 text-gray-400" />
+                                                        <input type="text" placeholder="Live Demo URL" value={proj.link || ''} onChange={(e) => handleArrayChange('projects', idx, 'link', e.target.value)} className="bg-transparent outline-none text-sm w-full" />
+                                                    </div>
+                                                    <div className="flex items-center gap-2 border rounded p-2 bg-gray-50">
+                                                        <Github className="h-4 w-4 text-gray-400" />
+                                                        <input type="text" placeholder="GitHub URL" value={proj.github || ''} onChange={(e) => handleArrayChange('projects', idx, 'github', e.target.value)} className="bg-transparent outline-none text-sm w-full" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </section>
 
                     {/* Links */}
