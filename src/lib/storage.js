@@ -37,6 +37,24 @@ export function getAnalysisById(id) {
     return history.find(item => item.id === id) || null;
 }
 
+export function updateAnalysis(id, updates) {
+    try {
+        const history = getHistory();
+        const index = history.findIndex(item => item.id === id);
+
+        if (index !== -1) {
+            // Merge updates into the existing item
+            history[index] = { ...history[index], ...updates };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error("Failed to update analysis", error);
+        return false;
+    }
+}
+
 export function clearHistory() {
     localStorage.removeItem(STORAGE_KEY);
 }
