@@ -5,6 +5,8 @@ import DashboardPage from './pages/DashboardPage';
 import PracticePage from './pages/PracticePage';
 import AssessmentsPage from './pages/AssessmentsPage';
 import ResourcesPage from './pages/ResourcesPage';
+import ResultsPage from './pages/ResultsPage';
+import HistoryPage from './pages/HistoryPage';
 import ProfilePage from './pages/ProfilePage';
 
 function App() {
@@ -15,6 +17,8 @@ function App() {
 
         <Route path="/dashboard" element={<AppShell />}>
           <Route index element={<DashboardPage />} />
+          <Route path="results" element={<ResultsPage />} />
+          <Route path="history" element={<HistoryPage />} />
           <Route path="practice" element={<PracticePage />} />
           <Route path="assessments" element={<AssessmentsPage />} />
           <Route path="resources" element={<ResourcesPage />} />
