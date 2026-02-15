@@ -20,7 +20,7 @@ export default function ResumePreviewComponent({ data }) {
             </header>
 
             {/* Summary */}
-            {summary && (
+            {summary && summary.trim().length > 0 && (
                 <section className="mb-6">
                     <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 border-b border-gray-200 pb-1">Professional Summary</h2>
                     <p className="text-sm text-gray-800">{summary}</p>
@@ -66,7 +66,7 @@ export default function ResumePreviewComponent({ data }) {
             )}
 
             {/* Skills */}
-            {skills && (
+            {skills && skills.trim().length > 0 && (
                 <section className="mb-6">
                     <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 border-b border-gray-200 pb-1">Technical Skills</h2>
                     <p className="text-sm text-gray-700">{skills}</p>
