@@ -1,45 +1,48 @@
 import React from 'react';
 
-export default function ResumePreviewComponent({ data }) {
+export default function ResumePreviewComponent({ data, template = 'classic' }) {
     if (!data) return <div className="text-center text-gray-400 mt-20">No data loaded</div>;
 
     const { personal, summary, education, experience, projects, skills, links } = data;
 
-    return (
-        <div className="bg-white text-black font-sans leading-relaxed md:p-10 p-6 min-h-[11in] shadow-sm" id="resume-preview">
+    // --- Layout Variants ---
+
+    // 1. Classic: Centered header, heavy border dividers, serif accents
+    const ClassicLayout = () => (
+        <div className="text-black font-serif leading-relaxed h-full">
             {/* Header */}
-            <header className="border-b border-gray-900 pb-6 mb-6">
-                <h1 className="text-4xl font-bold uppercase tracking-wide mb-2">{personal.name || "Your Name"}</h1>
-                <div className="flex flex-wrap text-sm gap-4 text-gray-600">
+            <header className="border-b-2 border-gray-800 pb-6 mb-8 text-center">
+                <h1 className="text-4xl font-bold uppercase tracking-widest mb-2">{personal.name || "Your Name"}</h1>
+                <div className="flex justify-center flex-wrap text-sm gap-3 text-gray-600 font-sans">
                     {personal.email && <span>{personal.email}</span>}
                     {personal.phone && <span>• {personal.phone}</span>}
                     {personal.location && <span>• {personal.location}</span>}
-                    {links && links.linkedin && <span>• {links.linkedin}</span>}
-                    {links && links.github && <span>• {links.github}</span>}
+                    {links?.linkedin && <span>• {links.linkedin}</span>}
+                    {links?.github && <span>• {links.github}</span>}
                 </div>
             </header>
 
             {/* Summary */}
             {summary && summary.trim().length > 0 && (
                 <section className="mb-6">
-                    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 border-b border-gray-200 pb-1">Professional Summary</h2>
-                    <p className="text-sm text-gray-800">{summary}</p>
+                    <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-2 border-b border-gray-300 pb-1">Professional Summary</h2>
+                    <p className="text-sm text-gray-800 font-sans">{summary}</p>
                 </section>
             )}
 
             {/* Experience */}
             {experience && experience.length > 0 && (
                 <section className="mb-6">
-                    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4 border-b border-gray-200 pb-1">Experience</h2>
-                    <div className="space-y-4">
+                    <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-4 border-b border-gray-300 pb-1">Experience</h2>
+                    <div className="space-y-5">
                         {experience.map((exp, idx) => (
                             <div key={idx}>
-                                <div className="flex justify-between items-baseline mb-1">
-                                    <h3 className="font-bold text-gray-900">{exp.role}</h3>
-                                    <span className="text-xs text-gray-500 font-medium">{exp.duration}</span>
+                                <div className="flex justify-between items-baseline mb-1 font-sans">
+                                    <h3 className="font-bold text-gray-900 text-base">{exp.role}</h3>
+                                    <span className="text-xs text-gray-600">{exp.duration}</span>
                                 </div>
-                                <div className="text-sm text-gray-600 mb-1">{exp.company}</div>
-                                <p className="text-sm text-gray-700 whitespace-pre-line">{exp.description}</p>
+                                <div className="text-sm font-bold text-gray-700 mb-1 font-sans">{exp.company}</div>
+                                <p className="text-sm text-gray-700 whitespace-pre-line font-sans">{exp.description}</p>
                             </div>
                         ))}
                     </div>
@@ -49,16 +52,16 @@ export default function ResumePreviewComponent({ data }) {
             {/* Projects */}
             {projects && projects.length > 0 && (
                 <section className="mb-6">
-                    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4 border-b border-gray-200 pb-1">Projects</h2>
+                    <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-4 border-b border-gray-300 pb-1">Projects</h2>
                     <div className="space-y-4">
                         {projects.map((proj, idx) => (
                             <div key={idx}>
-                                <div className="flex justify-between items-baseline mb-1">
+                                <div className="flex justify-between items-baseline mb-1 font-sans">
                                     <h3 className="font-bold text-gray-900">{proj.name}</h3>
-                                    <span className="text-xs text-gray-500 font-medium">{proj.tech}</span>
+                                    <span className="text-xs text-gray-600">{proj.tech}</span>
                                 </div>
-                                <p className="text-sm text-gray-700">{proj.description}</p>
-                                {proj.link && <a href={proj.link} className="text-xs text-gray-400 hover:text-gray-600 underline mt-1 block">{proj.link}</a>}
+                                <p className="text-sm text-gray-700 font-sans">{proj.description}</p>
+                                {proj.link && <a href={proj.link} className="text-xs text-gray-500 hover:text-black underline mt-0.5 block font-sans">{proj.link}</a>}
                             </div>
                         ))}
                     </div>
@@ -68,28 +71,213 @@ export default function ResumePreviewComponent({ data }) {
             {/* Skills */}
             {skills && skills.trim().length > 0 && (
                 <section className="mb-6">
-                    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 border-b border-gray-200 pb-1">Technical Skills</h2>
-                    <p className="text-sm text-gray-700">{skills}</p>
+                    <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-2 border-b border-gray-300 pb-1">Technical Skills</h2>
+                    <p className="text-sm text-gray-800 font-sans">{skills}</p>
                 </section>
             )}
 
             {/* Education */}
             {education && education.length > 0 && (
                 <section className="mb-6">
-                    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4 border-b border-gray-200 pb-1">Education</h2>
-                    <div className="space-y-3">
+                    <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-4 border-b border-gray-300 pb-1">Education</h2>
+                    <div className="space-y-3 font-sans">
                         {education.map((edu, idx) => (
-                            <div key={idx}>
-                                <div className="flex justify-between items-baseline">
+                            <div key={idx} className="flex justify-between items-baseline">
+                                <div>
                                     <h3 className="font-bold text-gray-900">{edu.school}</h3>
-                                    <span className="text-xs text-gray-500 font-medium">{edu.year}</span>
+                                    <div className="text-sm text-gray-700">{edu.degree}</div>
                                 </div>
-                                <div className="text-sm text-gray-700">{edu.degree}</div>
+                                <span className="text-xs text-gray-600">{edu.year}</span>
                             </div>
                         ))}
                     </div>
                 </section>
             )}
+        </div>
+    );
+
+    // 2. Modern: Left Align, Bold Sans, Clean spacing
+    const ModernLayout = () => (
+        <div className="text-black font-sans leading-relaxed h-full">
+            {/* Header */}
+            <header className="mb-8">
+                <h1 className="text-5xl font-extrabold tracking-tight mb-3 text-gray-900">{personal.name || "Your Name"}</h1>
+                <div className="flex flex-wrap text-sm gap-x-4 gap-y-1 text-gray-600 font-medium">
+                    {personal.email && <span>{personal.email}</span>}
+                    {personal.phone && <span>{personal.phone}</span>}
+                    {personal.location && <span>{personal.location}</span>}
+                    {links?.linkedin && <span className="text-indigo-600">{links.linkedin}</span>}
+                    {links?.github && <span className="text-indigo-600">{links.github}</span>}
+                </div>
+            </header>
+
+            {/* Summary */}
+            {summary && summary.trim().length > 0 && (
+                <section className="mb-8">
+                    <p className="text-sm text-gray-700 leading-6 border-l-2 border-gray-200 pl-4">{summary}</p>
+                </section>
+            )}
+
+            {/* Experience */}
+            {experience && experience.length > 0 && (
+                <section className="mb-8">
+                    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Experience</h2>
+                    <div className="space-y-6">
+                        {experience.map((exp, idx) => (
+                            <div key={idx} className="grid grid-cols-[1fr_3fr] gap-4">
+                                <div className="text-xs text-gray-500 mt-1">{exp.duration}</div>
+                                <div>
+                                    <h3 className="font-bold text-gray-900">{exp.role}</h3>
+                                    <div className="text-sm font-medium text-gray-600 mb-2">{exp.company}</div>
+                                    <p className="text-sm text-gray-700 whitespace-pre-line">{exp.description}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            {/* Projects */}
+            {projects && projects.length > 0 && (
+                <section className="mb-8">
+                    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Projects</h2>
+                    <div className="grid grid-cols-1 gap-4">
+                        {projects.map((proj, idx) => (
+                            <div key={idx} className="bg-gray-50 p-4 rounded-lg">
+                                <div className="flex justify-between items-baseline mb-2">
+                                    <h3 className="font-bold text-gray-900">{proj.name}</h3>
+                                    <span className="text-xs bg-gray-200 px-2 py-0.5 rounded text-gray-600">{proj.tech}</span>
+                                </div>
+                                <p className="text-sm text-gray-700 mb-2">{proj.description}</p>
+                                {proj.link && <a href={proj.link} className="text-xs text-indigo-600 hover:text-indigo-800">{proj.link}</a>}
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            {/* Skills */}
+            {skills && skills.trim().length > 0 && (
+                <section className="mb-8">
+                    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Skills</h2>
+                    <div className="flex flex-wrap gap-2">
+                        {skills.split(',').map((s, i) => (
+                            <span key={i} className="text-xs border border-gray-200 px-2 py-1 rounded-sm text-gray-700">
+                                {s.trim()}
+                            </span>
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            {/* Education */}
+            {education && education.length > 0 && (
+                <section className="mb-8">
+                    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Education</h2>
+                    <div className="space-y-2">
+                        {education.map((edu, idx) => (
+                            <div key={idx} className="flex items-center gap-4">
+                                <span className="text-xs text-gray-500 w-24 shrink-0">{edu.year}</span>
+                                <div>
+                                    <div className="font-bold text-sm text-gray-900">{edu.school}</div>
+                                    <div className="text-xs text-gray-600">{edu.degree}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+        </div>
+    );
+
+    // 3. Minimal: Very sparse, mono cues, lots of white space
+    const MinimalLayout = () => (
+        <div className="text-black font-sans text-sm leading-relaxed h-full">
+            <header className="mb-12">
+                <h1 className="text-2xl font-normal lowercase tracking-wide mb-1 opacity-90">{personal.name || "your name"}</h1>
+                <div className="text-xs text-gray-400 font-mono lower">
+                    {personal.email} / {personal.location}
+                </div>
+            </header>
+
+            <div className="grid grid-cols-[120px_1fr] gap-8">
+                {/* Summary */}
+                {summary && summary.trim().length > 0 && (
+                    <>
+                        <div className="text-xs text-gray-400 font-mono pt-1">about</div>
+                        <div className="mb-8 text-gray-800">{summary}</div>
+                    </>
+                )}
+
+                {/* Experience */}
+                {experience && experience.length > 0 && (
+                    <>
+                        <div className="text-xs text-gray-400 font-mono pt-1">experience</div>
+                        <div className="mb-8 space-y-6">
+                            {experience.map((exp, idx) => (
+                                <div key={idx}>
+                                    <div className="flex justify-between mb-1">
+                                        <div className="font-medium text-gray-900">{exp.role}</div>
+                                        <div className="font-mono text-xs text-gray-400">{exp.duration}</div>
+                                    </div>
+                                    <div className="text-xs text-gray-500 mb-2">{exp.company}</div>
+                                    <div className="text-gray-600 opacity-90">{exp.description}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                )}
+
+                {/* Projects */}
+                {projects && projects.length > 0 && (
+                    <>
+                        <div className="text-xs text-gray-400 font-mono pt-1">projects</div>
+                        <div className="mb-8 space-y-6">
+                            {projects.map((proj, idx) => (
+                                <div key={idx}>
+                                    <div className="flex justify-between mb-1">
+                                        <div className="font-medium text-gray-900">{proj.name}</div>
+                                        <div className="font-mono text-xs text-gray-400">{proj.tech}</div>
+                                    </div>
+                                    <div className="text-gray-600 opacity-90 mb-1">{proj.description}</div>
+                                    {proj.link && <div className="font-mono text-xs text-gray-400 underline">{proj.link}</div>}
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                )}
+
+                {/* Skills */}
+                {skills && skills.trim().length > 0 && (
+                    <>
+                        <div className="text-xs text-gray-400 font-mono pt-1">skills</div>
+                        <div className="mb-8 text-gray-800">
+                            {skills}
+                        </div>
+                    </>
+                )}
+
+                {/* Education */}
+                {education && education.length > 0 && (
+                    <>
+                        <div className="text-xs text-gray-400 font-mono pt-1">education</div>
+                        <div className="mb-8 space-y-2">
+                            {education.map((edu, idx) => (
+                                <div key={idx}>
+                                    <div className="text-gray-900">{edu.school}</div>
+                                    <div className="text-gray-500 text-xs">{edu.degree} / {edu.year}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="bg-white md:p-10 p-6 min-h-[11in] shadow-sm transform transition-all duration-300" id="resume-preview">
+            {template === 'modern' ? <ModernLayout /> : template === 'minimal' ? <MinimalLayout /> : <ClassicLayout />}
         </div>
     );
 }
