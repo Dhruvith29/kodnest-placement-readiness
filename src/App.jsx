@@ -8,6 +8,8 @@ import ResourcesPage from './pages/ResourcesPage';
 import ResultsPage from './pages/ResultsPage';
 import HistoryPage from './pages/HistoryPage';
 import ProfilePage from './pages/ProfilePage';
+import TestPage from './pages/TestPage';
+import ShipPage from './pages/ShipPage';
 
 function App() {
   return (
@@ -15,14 +17,16 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
 
-        <Route path="/dashboard" element={<AppShell />}>
-          <Route index element={<DashboardPage />} />
-          <Route path="results" element={<ResultsPage />} />
-          <Route path="history" element={<HistoryPage />} />
-          <Route path="practice" element={<PracticePage />} />
-          <Route path="assessments" element={<AssessmentsPage />} />
-          <Route path="resources" element={<ResourcesPage />} />
-          <Route path="profile" element={<ProfilePage />} />
+        <Route element={<AppShell />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/dashboard/results" element={<ResultsPage />} />
+          <Route path="/dashboard/history" element={<HistoryPage />} />
+          <Route path="/dashboard/practice" element={<PracticePage />} />
+          <Route path="/dashboard/assessments" element={<AssessmentsPage />} />
+          <Route path="/dashboard/resources" element={<ResourcesPage />} />
+          <Route path="/dashboard/profile" element={<ProfilePage />} />
+          <Route path="/prp/07-test" element={<TestPage />} />
+          <Route path="/prp/08-ship" element={<ShipPage />} />
         </Route>
 
         {/* Fallback route */}
