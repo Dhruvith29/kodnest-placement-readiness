@@ -242,45 +242,72 @@ export default function ResumeBuilder() {
         return warnings;
     };
 
-    // 3) ATS Score v1 (Deterministic) & Improvements
+    // 3) ATS Score (Exact Rules)
     const { score, improvements } = useMemo(() => {
         let score = 0;
         let improvs = [];
 
-        if (resumeData.personal.name && resumeData.personal.email) score += 20;
+        // 1. Name (+10)
+        if (resumeData.personal.name) score += 10;
+        else improvs.push("Add your full name (+10)");
 
-        const summaryWords = resumeData.summary.trim().split(/\s+/).filter(Boolean).length;
-        if (summaryWords >= 40) score += 15;
-        else improvs.push("Expand summary to 40+ words.");
+        // 2. Email (+10)
+        if (resumeData.personal.email) score += 10;
+        else improvs.push("Add email address (+10)");
 
-        if (resumeData.projects.length >= 2) score += 10;
-        else improvs.push(`Add ${2 - resumeData.projects.length} more project(s).`);
+        // 3. Phone (+5)
+        if (resumeData.personal.phone) score += 5;
+        else improvs.push("Add phone number (+5)");
 
-        if (resumeData.experience.length >= 1) score += 10;
-        else improvs.push("Add at least 1 experience entry.");
+        // 4. LinkedIn (+5)
+        if (resumeData.links.linkedin) score += 5;
+        else improvs.push("Add LinkedIn profile (+5)");
 
-        // Skills Check (Sum of all categories)
+        // 5. GitHub (+5)
+        if (resumeData.links.github) score += 5;
+        else improvs.push("Add GitHub profile (+5)");
+
+        // 6. Summary Length > 50 chars (+10)
+        const summaryLen = resumeData.summary.length;
+        if (summaryLen > 50) score += 10;
+        else improvs.push(`Expand summary (> 50 chars) (+10)`);
+
+        // 7. Action Verbs in Summary (+10)
+        const hasActionVerb = ACTION_VERBS.some(v => resumeData.summary.toLowerCase().includes(v));
+        if (hasActionVerb) score += 10;
+        else improvs.push("Use action verbs in summary (+10)");
+
+        // 8. Experience >= 1 (+15)
+        if (resumeData.experience.length >= 1) score += 15;
+        else improvs.push("Add at least 1 experience entry (+15)");
+
+        // 9. Projects >= 1 (+10)
+        if (resumeData.projects.length >= 1) score += 10;
+        else improvs.push("Add at least 1 project (+10)");
+
+        // 10. Education >= 1 (+10)
+        if (resumeData.education.length >= 1) score += 10;
+        else improvs.push("Add education details (+10)");
+
+        // 11. Skills >= 5 (+10)
         const totalSkills = (resumeData.skills.technical?.length || 0) +
             (resumeData.skills.soft?.length || 0) +
             (resumeData.skills.tools?.length || 0);
 
-        if (totalSkills >= 8) score += 10;
-        else improvs.push("Add more skills (target 8+ total).");
-
-        if (resumeData.links.github || resumeData.links.linkedin) score += 10;
-
-        const hasNumbers = [...resumeData.experience].some(item => /\d+|%|\b[XkM]\b/.test(item.description || ""));
-        if (hasNumbers) score += 15;
-        else improvs.push("Add numbers/metrics to experience.");
-
-        const hasEducation = resumeData.education.length > 0;
-        if (hasEducation) score += 10;
+        if (totalSkills >= 5) score += 10;
+        else improvs.push(`Add 5+ skills (Current: ${totalSkills}) (+10)`);
 
         return {
             score: Math.min(score, 100),
             improvements: improvs.slice(0, 3)
         };
     }, [resumeData]);
+
+    const getScoreColor = (s) => {
+        if (s >= 71) return 'text-green-600 bg-green-50 border-green-200 stroke-green-500';
+        if (s >= 41) return 'text-amber-600 bg-amber-50 border-amber-200 stroke-amber-500';
+        return 'text-red-600 bg-red-50 border-red-200 stroke-red-500';
+    };
 
     const getScoreColor = (s) => s >= 80 ? 'text-green-600 bg-green-50 border-green-200' : s >= 50 ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-red-600 bg-red-50 border-red-200';
 
@@ -518,39 +545,59 @@ export default function ResumeBuilder() {
             <div className="w-1/2 bg-gray-100 flex flex-col h-full overflow-hidden">
                 {/* ATS Score Header */}
                 <div className="bg-white border-b border-gray-200 p-4 shadow-sm z-10 shrink-0">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                            <TrendingUp className="h-5 w-5 text-indigo-600" />
-                            <h3 className="font-bold text-gray-900">ATS Readiness Score</h3>
+                    <div className="flex items-center gap-4 mb-4">
+                        {/* Circular Progress */}
+                        <div className="relative h-16 w-16 shrink-0">
+                            <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
+                                {/* Background Circle */}
+                                <path
+                                    className="text-gray-100"
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="3"
+                                />
+                                {/* Progress Circle */}
+                                <path
+                                    className={`${getScoreColor(score).split(' ').pop()} transition-all duration-1000 ease-out`}
+                                    strokeDasharray={`${score}, 100`}
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none"
+                                    strokeWidth="3"
+                                />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center font-bold text-sm text-gray-700">
+                                {score}
+                            </div>
                         </div>
-                        <span className={`text-lg font-bold px-3 py-1 rounded-full border ${getScoreColor(score)}`}>
-                            {score} / 100
-                        </span>
+
+                        <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                                <h3 className="font-bold text-gray-900">Resume Strength</h3>
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded ${getScoreColor(score).replace('stroke-', '')}`}>
+                                    {score >= 71 ? 'Strong Resume' : score >= 41 ? 'Getting There' : 'Needs Work'}
+                                </span>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                                {score >= 71 ? "Your resume is ready for applications!" : "Complete the suggestions below to improve your score."}
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Progress Bar */}
-                    <div className="w-full bg-gray-100 rounded-full h-2 mb-4">
-                        <div
-                            className={`h-2 rounded-full transition-all duration-500 ease-out ${score >= 80 ? 'bg-green-500' : score >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
-                            style={{ width: `${score}%` }}
-                        ></div>
-                    </div>
-
-                    {/* Top 3 Improvements */}
+                    {/* Top Improvements */}
                     {improvements.length > 0 ? (
-                        <div className="space-y-2">
-                            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Top Improvements</div>
+                        <div className="space-y-2 border-t border-gray-100 pt-3">
                             {improvements.map((improv, i) => (
-                                <div key={i} className="flex items-start gap-2 text-xs text-gray-700 bg-gray-50 p-2 rounded">
-                                    <ChevronRight className="h-3.5 w-3.5 text-indigo-500 mt-0.5 shrink-0" />
+                                <div key={i} className="flex items-start gap-2 text-xs text-gray-700 bg-gray-50 p-2 rounded animate-in fade-in slide-in-from-left-2 duration-300" style={{ animationDelay: `${i * 100}ms` }}>
+                                    <AlertCircle className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
                                     <span>{improv}</span>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 p-2 rounded border border-green-100">
+                        <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 p-2 rounded border border-green-100 animate-in zoom-in duration-300">
                             <CheckCircle2 className="h-4 w-4" />
-                            <span>Great job! Your profile looks strong.</span>
+                            <span>All set! Your profile includes all key sections.</span>
                         </div>
                     )}
                 </div>
