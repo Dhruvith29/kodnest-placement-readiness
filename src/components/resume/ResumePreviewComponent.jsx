@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function ResumePreviewComponent({ data, template = 'classic' }) {
+export default function ResumePreviewComponent({ data, template = 'classic', color = 'hsl(168, 60%, 40%)' }) {
     if (!data) return <div className="text-center text-gray-400 mt-20">No data loaded</div>;
 
     const { personal, summary, education, experience, projects, skills, links } = data;
@@ -31,8 +31,8 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
     const ClassicLayout = () => (
         <div className="text-black font-serif leading-relaxed h-full">
             {/* Header */}
-            <header className="border-b-2 border-gray-800 pb-6 mb-8 text-center">
-                <h1 className="text-4xl font-bold uppercase tracking-widest mb-2">{personal.name || "Your Name"}</h1>
+            <header className="border-b-2 pb-6 mb-8 text-center" style={{ borderColor: color }}>
+                <h1 className="text-4xl font-bold uppercase tracking-widest mb-2" style={{ color: color }}>{personal.name || "Your Name"}</h1>
                 <div className="flex justify-center flex-wrap text-sm gap-3 text-gray-600 font-sans">
                     {personal.email && <span>{personal.email}</span>}
                     {personal.phone && <span>• {personal.phone}</span>}
@@ -45,7 +45,7 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
             {/* Summary */}
             {summary && summary.trim().length > 0 && (
                 <section className="mb-6">
-                    <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-2 border-b border-gray-300 pb-1">Professional Summary</h2>
+                    <h2 className="text-sm font-bold uppercase tracking-widest mb-2 border-b pb-1" style={{ color: color, borderColor: '#e5e7eb' }}>Professional Summary</h2>
                     <p className="text-sm text-gray-800 font-sans">{summary}</p>
                 </section>
             )}
@@ -53,7 +53,7 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
             {/* Experience */}
             {experience && experience.length > 0 && (
                 <section className="mb-6">
-                    <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-4 border-b border-gray-300 pb-1">Experience</h2>
+                    <h2 className="text-sm font-bold uppercase tracking-widest mb-4 border-b pb-1" style={{ color: color, borderColor: '#e5e7eb' }}>Experience</h2>
                     <div className="space-y-5">
                         {experience.map((exp, idx) => (
                             <div key={idx}>
@@ -72,7 +72,7 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
             {/* Projects */}
             {projects && projects.length > 0 && (
                 <section className="mb-6">
-                    <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-4 border-b border-gray-300 pb-1">Projects</h2>
+                    <h2 className="text-sm font-bold uppercase tracking-widest mb-4 border-b pb-1" style={{ color: color, borderColor: '#e5e7eb' }}>Projects</h2>
                     <div className="space-y-4">
                         {projects.map((proj, idx) => {
                             const stack = getTechStack(proj);
@@ -99,7 +99,7 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
             {/* Skills */}
             {skillGroups.length > 0 && (
                 <section className="mb-6">
-                    <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-2 border-b border-gray-300 pb-1">Technical Skills</h2>
+                    <h2 className="text-sm font-bold uppercase tracking-widest mb-2 border-b pb-1" style={{ color: color, borderColor: '#e5e7eb' }}>Technical Skills</h2>
                     <div className="space-y-1 font-sans text-sm">
                         {skillGroups.map((grp, idx) => (
                             <div key={idx}>
@@ -113,7 +113,7 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
             {/* Education */}
             {education && education.length > 0 && (
                 <section className="mb-6">
-                    <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-4 border-b border-gray-300 pb-1">Education</h2>
+                    <h2 className="text-sm font-bold uppercase tracking-widest mb-4 border-b pb-1" style={{ color: color, borderColor: '#e5e7eb' }}>Education</h2>
                     <div className="space-y-3 font-sans">
                         {education.map((edu, idx) => (
                             <div key={idx} className="flex justify-between items-baseline">
@@ -130,126 +130,135 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
         </div>
     );
 
-    // 2. Modern: Left Align, Bold Sans, Clean spacing
+    // 2. Modern: Sidebar layout with color block
     const ModernLayout = () => (
-        <div className="text-black font-sans leading-relaxed h-full">
-            {/* Header */}
-            <header className="mb-8">
-                <h1 className="text-5xl font-extrabold tracking-tight mb-3 text-gray-900">{personal.name || "Your Name"}</h1>
-                <div className="flex flex-wrap text-sm gap-x-4 gap-y-1 text-gray-600 font-medium">
-                    {personal.email && <span>{personal.email}</span>}
-                    {personal.phone && <span>{personal.phone}</span>}
-                    {personal.location && <span>{personal.location}</span>}
-                    {links?.linkedin && <span className="text-indigo-600">{links.linkedin}</span>}
-                    {links?.github && <span className="text-indigo-600">{links.github}</span>}
+        <div className="flex h-full font-sans">
+            {/* Sidebar */}
+            <div className="w-1/3 text-white p-6 space-y-8 shrink-0" style={{ backgroundColor: color }}>
+                {/* Contact */}
+                <div className="space-y-2 text-sm text-white/90">
+                    {personal.email && <div className="break-all">{personal.email}</div>}
+                    {personal.phone && <div>{personal.phone}</div>}
+                    {personal.location && <div>{personal.location}</div>}
+                    {links?.linkedin && <div className="text-white/80 text-xs mt-2">{links.linkedin}</div>}
+                    {links?.github && <div className="text-white/80 text-xs">{links.github}</div>}
                 </div>
-            </header>
 
-            {/* Summary */}
-            {summary && summary.trim().length > 0 && (
-                <section className="mb-8">
-                    <p className="text-sm text-gray-700 leading-6 border-l-2 border-gray-200 pl-4">{summary}</p>
-                </section>
-            )}
-
-            {/* Experience */}
-            {experience && experience.length > 0 && (
-                <section className="mb-8">
-                    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Experience</h2>
-                    <div className="space-y-6">
-                        {experience.map((exp, idx) => (
-                            <div key={idx} className="grid grid-cols-[1fr_3fr] gap-4">
-                                <div className="text-xs text-gray-500 mt-1">{exp.duration}</div>
-                                <div>
-                                    <h3 className="font-bold text-gray-900">{exp.role}</h3>
-                                    <div className="text-sm font-medium text-gray-600 mb-2">{exp.company}</div>
-                                    <p className="text-sm text-gray-700 whitespace-pre-line">{exp.description}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            )}
-
-            {/* Projects */}
-            {projects && projects.length > 0 && (
-                <section className="mb-8">
-                    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Projects</h2>
-                    <div className="grid grid-cols-1 gap-4">
-                        {projects.map((proj, idx) => {
-                            const stack = getTechStack(proj);
-                            return (
-                                <div key={idx} className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                                    <div className="flex justify-between items-baseline mb-2">
-                                        <h3 className="font-bold text-gray-900">{proj.name}</h3>
-                                        <div className="flex gap-2">
-                                            {proj.link && <a href={proj.link} className="text-xs text-indigo-600 hover:text-indigo-800">Live</a>}
-                                            {proj.github && <a href={proj.github} className="text-xs text-indigo-600 hover:text-indigo-800">Code</a>}
-                                        </div>
-                                    </div>
-                                    <p className="text-sm text-gray-700 mb-3">{proj.description}</p>
+                {/* Skills in Sidebar */}
+                {skillGroups.length > 0 && (
+                    <div className="space-y-4">
+                        <h4 className="font-bold uppercase tracking-widest text-xs border-b border-white/20 pb-2">Skills</h4>
+                        <div className="space-y-3">
+                            {skillGroups.map((grp, idx) => (
+                                <div key={idx}>
+                                    <div className="text-xs font-semibold text-white/70 uppercase mb-1">{grp.category}</div>
                                     <div className="flex flex-wrap gap-1">
-                                        {stack.map((t, i) => (
-                                            <span key={i} className="text-[10px] uppercase font-semibold tracking-wide bg-white border border-gray-200 px-2 py-0.5 rounded text-gray-600">
-                                                {t}
+                                        {grp.items.map((s, i) => (
+                                            <span key={i} className="text-xs bg-white/20 px-2 py-0.5 rounded text-white">
+                                                {s}
                                             </span>
                                         ))}
                                     </div>
                                 </div>
-                            );
-                        })}
+                            ))}
+                        </div>
                     </div>
-                </section>
-            )}
+                )}
 
-            {/* Skills */}
-            {skillGroups.length > 0 && (
-                <section className="mb-8">
-                    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Skills</h2>
-                    <div className="space-y-3">
-                        {skillGroups.map((grp, idx) => (
-                            <div key={idx} className="flex flex-col gap-1">
-                                <span className="text-xs font-semibold text-gray-500 uppercase">{grp.category}</span>
-                                <div className="flex flex-wrap gap-2">
-                                    {grp.items.map((s, i) => (
-                                        <span key={i} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                                            {s}
-                                        </span>
-                                    ))}
+                {/* Education in Sidebar */}
+                {education && education.length > 0 && (
+                    <div className="space-y-4">
+                        <h4 className="font-bold uppercase tracking-widest text-xs border-b border-white/20 pb-2">Education</h4>
+                        <div className="space-y-3">
+                            {education.map((edu, idx) => (
+                                <div key={idx}>
+                                    <div className="font-bold text-sm">{edu.school}</div>
+                                    <div className="text-xs text-white/80">{edu.degree}</div>
+                                    <div className="text-xs text-white/60">{edu.year}</div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
-                </section>
-            )}
+                )}
+            </div>
 
-            {/* Education */}
-            {education && education.length > 0 && (
-                <section className="mb-8">
-                    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Education</h2>
-                    <div className="space-y-2">
-                        {education.map((edu, idx) => (
-                            <div key={idx} className="flex items-center gap-4">
-                                <span className="text-xs text-gray-500 w-24 shrink-0">{edu.year}</span>
-                                <div>
-                                    <div className="font-bold text-sm text-gray-900">{edu.school}</div>
-                                    <div className="text-xs text-gray-600">{edu.degree}</div>
+            {/* Main Content */}
+            <div className="w-2/3 p-8 text-gray-800 space-y-8">
+                {/* Header Name */}
+                <div>
+                    <h1 className="text-4xl font-extrabold tracking-tight uppercase" style={{ color: color }}>{personal.name || "Your Name"}</h1>
+                    <div className="h-1 w-20 mt-2" style={{ backgroundColor: color }}></div>
+                </div>
+
+                {/* Summary */}
+                {summary && summary.trim().length > 0 && (
+                    <section>
+                        <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Profile</h2>
+                        <p className="text-sm text-gray-700 leading-relaxed">{summary}</p>
+                    </section>
+                )}
+
+                {/* Experience */}
+                {experience && experience.length > 0 && (
+                    <section>
+                        <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Experience</h2>
+                        <div className="space-y-6">
+                            {experience.map((exp, idx) => (
+                                <div key={idx}>
+                                    <div className="flex justify-between items-baseline mb-1">
+                                        <h3 className="font-bold text-gray-900 text-lg">{exp.role}</h3>
+                                        <span className="text-xs text-gray-500 font-medium">{exp.duration}</span>
+                                    </div>
+                                    <div className="text-sm font-semibold mb-2" style={{ color: color }}>{exp.company}</div>
+                                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{exp.description}</p>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            )}
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* Projects */}
+                {projects && projects.length > 0 && (
+                    <section>
+                        <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Projects</h2>
+                        <div className="space-y-4">
+                            {projects.map((proj, idx) => {
+                                const stack = getTechStack(proj);
+                                return (
+                                    <div key={idx} className="bg-gray-50 p-4 rounded-lg border-l-4" style={{ borderColor: color }}>
+                                        <div className="flex justify-between items-baseline mb-1">
+                                            <h3 className="font-bold text-gray-900">{proj.name}</h3>
+                                            <div className="flex gap-2">
+                                                {proj.link && <a href={proj.link} className="text-xs hover:underline" style={{ color: color }}>Live</a>}
+                                                {proj.github && <a href={proj.github} className="text-xs hover:underline" style={{ color: color }}>Code</a>}
+                                            </div>
+                                        </div>
+                                        <p className="text-sm text-gray-600 mb-2">{proj.description}</p>
+                                        <div className="flex flex-wrap gap-1">
+                                            {stack.map((t, i) => (
+                                                <span key={i} className="text-[10px] uppercase font-bold tracking-wider text-gray-500">
+                                                    #{t}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
+                )}
+            </div>
         </div>
     );
 
     // 3. Minimal: Very sparse, mono cues, lots of white space
     const MinimalLayout = () => (
         <div className="text-black font-sans text-sm leading-relaxed h-full">
-            <header className="mb-12">
-                <h1 className="text-2xl font-normal lowercase tracking-wide mb-1 opacity-90">{personal.name || "your name"}</h1>
-                <div className="text-xs text-gray-400 font-mono lower">
-                    {personal.email} / {personal.location}
+            <header className="mb-12 border-b border-gray-100 pb-8">
+                <h1 className="text-3xl font-light lowercase tracking-tight mb-2" style={{ color: color }}>{personal.name || "your name"}</h1>
+                <div className="text-xs text-gray-400 font-mono lower flex gap-4">
+                    <span>{personal.email}</span>
+                    <span>{personal.location}</span>
                 </div>
             </header>
 
@@ -257,7 +266,7 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
                 {/* Summary */}
                 {summary && summary.trim().length > 0 && (
                     <>
-                        <div className="text-xs text-gray-400 font-mono pt-1">about</div>
+                        <div className="text-xs font-mono pt-1" style={{ color: color }}>about</div>
                         <div className="mb-8 text-gray-800">{summary}</div>
                     </>
                 )}
@@ -265,8 +274,8 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
                 {/* Experience */}
                 {experience && experience.length > 0 && (
                     <>
-                        <div className="text-xs text-gray-400 font-mono pt-1">experience</div>
-                        <div className="mb-8 space-y-6">
+                        <div className="text-xs font-mono pt-1" style={{ color: color }}>experience</div>
+                        <div className="mb-8 space-y-8">
                             {experience.map((exp, idx) => (
                                 <div key={idx}>
                                     <div className="flex justify-between mb-1">
@@ -284,7 +293,7 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
                 {/* Projects */}
                 {projects && projects.length > 0 && (
                     <>
-                        <div className="text-xs text-gray-400 font-mono pt-1">projects</div>
+                        <div className="text-xs font-mono pt-1" style={{ color: color }}>projects</div>
                         <div className="mb-8 space-y-6">
                             {projects.map((proj, idx) => (
                                 <div key={idx}>
@@ -296,8 +305,8 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
                                     </div>
                                     <div className="text-gray-600 opacity-90 mb-1">{proj.description}</div>
                                     <div className="flex gap-4">
-                                        {proj.link && <a href={proj.link} className="font-mono text-xs text-gray-400 underline">live</a>}
-                                        {proj.github && <a href={proj.github} className="font-mono text-xs text-gray-400 underline">code</a>}
+                                        {proj.link && <a href={proj.link} className="font-mono text-xs underline opacity-60 hover:opacity-100" style={{ color: color }}>live</a>}
+                                        {proj.github && <a href={proj.github} className="font-mono text-xs underline opacity-60 hover:opacity-100" style={{ color: color }}>code</a>}
                                     </div>
                                 </div>
                             ))}
@@ -308,11 +317,11 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
                 {/* Skills */}
                 {skillGroups.length > 0 && (
                     <>
-                        <div className="text-xs text-gray-400 font-mono pt-1">skills</div>
+                        <div className="text-xs font-mono pt-1" style={{ color: color }}>skills</div>
                         <div className="mb-8 space-y-2">
                             {skillGroups.map((grp, idx) => (
                                 <div key={idx} className="text-gray-800">
-                                    <span className="text-gray-400 text-xs lowercase mr-2">{grp.category}:</span>
+                                    <span className="text-xs lowercase mr-2 opacity-50" style={{ color: color }}>{grp.category}:</span>
                                     {grp.items.join(', ')}
                                 </div>
                             ))}
@@ -323,7 +332,7 @@ export default function ResumePreviewComponent({ data, template = 'classic' }) {
                 {/* Education */}
                 {education && education.length > 0 && (
                     <>
-                        <div className="text-xs text-gray-400 font-mono pt-1">education</div>
+                        <div className="text-xs font-mono pt-1" style={{ color: color }}>education</div>
                         <div className="mb-8 space-y-2">
                             {education.map((edu, idx) => (
                                 <div key={idx}>

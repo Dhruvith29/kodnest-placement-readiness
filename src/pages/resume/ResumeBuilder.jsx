@@ -10,9 +10,10 @@ const INITIAL_STATE = {
     education: [],
     experience: [],
     projects: [],
-    skills: { technical: [], soft: [], tools: [] }, // New Structure
+    skills: { technical: [], soft: [], tools: [] },
     links: { linkedin: '', github: '' },
-    template: 'classic'
+    template: 'classic',
+    color: 'hsl(210, 100%, 50%)' // Default Blue
 };
 
 // Sample Data
@@ -50,8 +51,23 @@ const SAMPLE_DATA = {
         tools: ['Git', 'Docker', 'AWS']
     },
     links: { linkedin: 'linkedin.com/in/alexdev', github: 'github.com/alexdev' },
-    template: 'modern'
+    template: 'modern',
+    color: 'hsl(220, 60%, 35%)' // Navy
 };
+
+const COLORS = [
+    { name: 'Teal', value: 'hsl(168, 60%, 40%)' },
+    { name: 'Navy', value: 'hsl(220, 60%, 35%)' },
+    { name: 'Burgundy', value: 'hsl(345, 60%, 35%)' },
+    { name: 'Forest', value: 'hsl(150, 50%, 30%)' },
+    { name: 'Charcoal', value: 'hsl(0, 0%, 25%)' }
+];
+
+const TEMPLATES = [
+    { id: 'classic', name: 'Classic', desc: 'Serif, Traditional' },
+    { id: 'modern', name: 'Modern', desc: 'Sleek, Sidebar' },
+    { id: 'minimal', name: 'Minimal', desc: 'Clean, Simple' },
+];
 
 const ACTION_VERBS = [
     'built', 'developed', 'designed', 'implemented', 'led', 'improved', 'created', 'optimized',
@@ -124,6 +140,19 @@ export default function ResumeBuilder() {
 
     const setTemplate = (tpl) => {
         setResumeData(prev => ({ ...prev, template: tpl }));
+    };
+
+    const setColor = (col) => {
+        setResumeData(prev => ({ ...prev, color: col }));
+    };
+
+    const handleDownload = () => {
+        // Mock Download
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-xl z-50 animate-bounce';
+        toast.textContent = "PDF export ready! Check your downloads.";
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
     };
 
     // --- Skills Logic ---
@@ -281,32 +310,18 @@ export default function ResumeBuilder() {
                         <Layout className="h-5 w-5" /> Builder
                     </Link>
                     <div className="flex gap-2">
-                        <div className="flex bg-gray-100 rounded-lg p-1 mr-2">
-                            {['classic', 'modern', 'minimal'].map(t => (
-                                <button
-                                    key={t}
-                                    onClick={() => setTemplate(t)}
-                                    className={`px-3 py-1 text-xs font-medium rounded-md capitalize transition-all ${(resumeData.template || 'classic') === t
-                                        ? 'bg-white text-black shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-900'
-                                        }`}
-                                >
-                                    {t}
-                                </button>
-                            ))}
-                        </div>
                         <button
-                            onClick={() => setResumeData({ ...SAMPLE_DATA, template: resumeData.template })}
+                            onClick={() => setResumeData({ ...SAMPLE_DATA, template: resumeData.template, color: resumeData.color })}
                             className="px-3 py-1.5 text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors flex items-center gap-1"
                         >
                             <RefreshCw className="h-3 w-3" /> Sample
                         </button>
-                        <Link
-                            to="/resume/preview"
+                        <button
+                            onClick={handleDownload}
                             className="px-3 py-1.5 text-xs font-medium bg-black hover:bg-gray-800 text-white rounded-md transition-colors flex items-center gap-1"
                         >
-                            <Eye className="h-3 w-3" /> Preview
-                        </Link>
+                            <Download className="h-3 w-3" /> PDF
+                        </button>
                     </div>
                 </div>
 
@@ -540,10 +555,71 @@ export default function ResumeBuilder() {
                     )}
                 </div>
 
+                {/* Customization Panel (Template & Color) */}
+                <div className="bg-white border-b border-gray-200 p-4 shadow-sm z-10 space-y-4">
+                    {/* Template Picker */}
+                    <div>
+                        <h3 className="text-xs font-bold uppercase text-gray-500 mb-3 tracking-wider">Select Template</h3>
+                        <div className="flex gap-4 overflow-x-auto pb-2">
+                            {TEMPLATES.map(t => (
+                                <button
+                                    key={t.id}
+                                    onClick={() => setTemplate(t.id)}
+                                    className={`relative group w-28 shrink-0 rounded-lg overflow-hidden border-2 transition-all text-left ${resumeData.template === t.id
+                                        ? 'border-indigo-600 ring-2 ring-indigo-100'
+                                        : 'border-gray-200 hover:border-gray-300'
+                                        }`}
+                                >
+                                    <div className="h-20 bg-gray-50 p-2 flex flex-col gap-1">
+                                        <div className="h-1.5 w-1/2 bg-gray-300 rounded-full mb-1"></div>
+                                        <div className="h-1 w-full bg-gray-200 rounded-full"></div>
+                                        <div className="h-1 w-3/4 bg-gray-200 rounded-full"></div>
+                                        {/* Mock Layouts */}
+                                        {t.id === 'modern' && <div className="absolute top-0 left-0 w-6 h-full bg-gray-200/50"></div>}
+                                        {t.id === 'minimal' && <div className="h-full w-full bg-white"></div>}
+                                    </div>
+                                    <div className="p-2 bg-white">
+                                        <div className="text-xs font-bold text-gray-800">{t.name}</div>
+                                        <div className="text-[10px] text-gray-500">{t.desc}</div>
+                                    </div>
+                                    {resumeData.template === t.id && (
+                                        <div className="absolute top-2 right-2 bg-indigo-600 text-white rounded-full p-0.5 shadow-sm">
+                                            <CheckCircle2 className="h-3 w-3" />
+                                        </div>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Color Picker */}
+                    <div>
+                        <h3 className="text-xs font-bold uppercase text-gray-500 mb-2 tracking-wider">Accent Color</h3>
+                        <div className="flex gap-3">
+                            {COLORS.map((c, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setColor(c.value)}
+                                    className={`w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110 flex items-center justify-center ring-offset-2 ${resumeData.color === c.value ? 'ring-2 ring-gray-400 scale-110' : ''
+                                        }`}
+                                    style={{ backgroundColor: c.value }}
+                                    title={c.name}
+                                >
+                                    {resumeData.color === c.value && <CheckCircle2 className="h-4 w-4 text-white drop-shadow-md" />}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
                 {/* Preview Area */}
                 <div className="flex-1 overflow-y-auto p-8 flex justify-center bg-gray-100">
                     <div className="w-[8.5in] min-h-[11in] bg-white shadow-2xl origin-top transform scale-75 md:scale-90 lg:scale-100 transition-transform">
-                        <ResumePreviewComponent data={resumeData} template={resumeData.template || 'classic'} />
+                        <ResumePreviewComponent
+                            data={resumeData}
+                            template={resumeData.template || 'classic'}
+                            color={resumeData.color || 'hsl(168, 60%, 40%)'}
+                        />
                     </div>
                 </div>
             </div>
