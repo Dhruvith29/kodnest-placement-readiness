@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getHistory, clearHistory } from '../lib/storage';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
 import { Trash2, ArrowRight } from 'lucide-react';
 
 function timeAgo(dateString) {

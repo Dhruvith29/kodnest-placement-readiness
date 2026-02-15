@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { getAnalysisById, getLatestAnalysis } from '../lib/storage';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
 import { Progress } from '../components/ui/progress';
 import { BadgeCheck, BrainCircuit, Calendar, CheckSquare, Target } from 'lucide-react';
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/Card';
 import { analyzeJD } from '../../lib/analyzer';
 import { saveAnalysis } from '../../lib/storage';
 import { useNavigate } from 'react-router-dom';
