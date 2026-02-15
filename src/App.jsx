@@ -11,6 +11,9 @@ import ProfilePage from './pages/ProfilePage';
 import TestPage from './pages/TestPage';
 import ShipPage from './pages/ShipPage';
 import ProofPage from './pages/ProofPage';
+import ResumeBuilderLayout from './components/layout/ResumeBuilderLayout';
+import StepPage from './pages/resume-builder/StepPage';
+import ResumeProofPage from './pages/resume-builder/ResumeProofPage';
 
 function App() {
   return (
@@ -29,6 +32,19 @@ function App() {
           <Route path="/prp/07-test" element={<TestPage />} />
           <Route path="/prp/08-ship" element={<ShipPage />} />
           <Route path="/prp/proof" element={<ProofPage />} />
+        </Route>
+
+        {/* Project 3: AI Resume Builder Routes */}
+        <Route path="/rb" element={<ResumeBuilderLayout />}>
+          <Route path="01-problem" element={<StepPage />} />
+          <Route path="02-market" element={<StepPage />} />
+          <Route path="03-architecture" element={<StepPage />} />
+          <Route path="04-hld" element={<StepPage />} />
+          <Route path="05-lld" element={<StepPage />} />
+          <Route path="06-build" element={<StepPage />} />
+          <Route path="07-test" element={<StepPage />} />
+          <Route path="08-ship" element={<StepPage />} />
+          <Route path="proof" element={<ResumeProofPage />} />
         </Route>
 
         {/* Fallback route */}
