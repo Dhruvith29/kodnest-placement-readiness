@@ -45,6 +45,12 @@ export function analyzeJD(text, company, role) {
     // 5. Questions Generation
     const questions = generateQuestions(foundSkills);
 
+    // 6. Company Intel Generation
+    const companyIntel = generateCompanyIntel(company);
+
+    // 7. Round Mapping Generation
+    const roundMapping = generateRoundMapping(companyIntel.size, foundSkills);
+
     return {
         id: Date.now().toString(),
         createdAt: new Date().toISOString(),
@@ -55,8 +61,79 @@ export function analyzeJD(text, company, role) {
         plan,
         checklist,
         questions,
-        readinessScore: score
+        companyIntel,
+        roundMapping,
+        readinessScore: score // Will be overridden by baseScore logic in ResultsPage if exists, but good to have initial
     };
+}
+
+function generateCompanyIntel(companyName) {
+    const name = companyName ? companyName.toLowerCase() : "";
+
+    // Heuristic Lists
+    const enterprises = ["google", "amazon", "microsoft", "meta", "facebook", "netflix", "apple", "adobe", "salesforce", "oracle", "ibm", "tcs", "infosys", "wipro", "accenture", "capgemini", "cognizant", "deloitte", "goldman sachs", "jpmorgan", "morgan stanley", "flipkart", "paytm", "uber", "ola", "zomato", "swiggy"];
+    const midSize = ["zoho", "freshworks", "browserstack", "razorpay", "cred", "zerodha", "groww", "postman", "hackerarth", "hackerrank"];
+
+    let size = "Startup";
+    let type = "Product based";
+    let focus = "Practical problem solving & Full-stack depth";
+
+    if (enterprises.some(e => name.includes(e))) {
+        size = "Enterprise";
+        focus = "Data Structures, Algorithms & System Design scalability";
+        if (["tcs", "infosys", "wipro", "accenture", "cognizant", "capgemini"].some(e => name.includes(e))) {
+            type = "Service based";
+            focus = "Aptitude, Core CS Fundamentals & Communication";
+        }
+    } else if (midSize.some(e => name.includes(e))) {
+        size = "Mid-Size";
+        focus = "Product specific skills, System Design & Clean Code";
+    }
+
+    // Default heuristics if unknown
+    if (size === "Startup") {
+        if (name.includes("tech") || name.includes("labs") || name.includes("solutions")) {
+            type = "Service/Agency";
+            focus = "Rapid development, adaptability & specific stack expertise";
+        }
+    }
+
+    return {
+        name: companyName || "Target Company",
+        industry: "Technology", // simplified default
+        size,
+        type,
+        focus
+    };
+}
+
+function generateRoundMapping(companySize, skills) {
+    const hasDSA = skills["Core CS"]?.some(s => ["dsa", "algorithms", "data structures"].some(k => s.toLowerCase().includes(k)));
+
+    // Default flow
+    let rounds = [
+        { name: "Round 1: Online Assessment", type: "Screening", focus: "Aptitude + Basic Coding", why: "To filter candidates based on basic problem solving speed." },
+        { name: "Round 2: Technical Interview 1", type: "Technical", focus: "Data Structures & Logic", why: "To test your ability to write efficient code." },
+        { name: "Round 3: Technical Interview 2", type: "Technical", focus: "System Design / Specialized Stack", why: "To assess architectural understanding and depth." },
+        { name: "Round 4: HR / Managerial", type: "Behavioral", focus: "Culture Fit", why: "To see if you align with company values." }
+    ];
+
+    if (companySize === "Enterprise") {
+        rounds = [
+            { name: "Round 1: Online Coding Test", type: "Screening", focus: "2-3 Medium/Hard DSA Problems", why: "High-volume filtering. Speed and correctness are key." },
+            { name: "Round 2: Technical Algo", type: "Technical", focus: "DSA Optimization & Edge Cases", why: "Verifying problem solving depth." },
+            { name: "Round 3: System Design / CS Core", type: "Technical", focus: "LLD/HLD or OS/DBMS", why: "Checking foundational engineering knowledge." },
+            { name: "Round 4: Managerial / HR", type: "Behavioral", focus: "Leadership Principles & Values", why: "Assessing long-term fit and soft skills." }
+        ];
+    } else if (companySize === "Startup") {
+        rounds = [
+            { name: "Round 1: Assignment / Screening", type: "Screening", focus: "Take-home task or Basic Call", why: "Proving you can build something real." },
+            { name: "Round 2: Pairing / Technical", type: "Technical", focus: "Live coding feature implementation", why: "Checking coding style, debugging, and collaboration." },
+            { name: "Round 3: Founder / Culture Fit", type: "Behavioral", focus: "Passion & Ownership", why: "Startups need self-starters who care about the mission." }
+        ];
+    }
+
+    return rounds;
 }
 
 function generatePlan(skills) {

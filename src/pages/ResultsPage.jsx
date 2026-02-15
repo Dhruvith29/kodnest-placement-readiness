@@ -12,7 +12,11 @@ import {
     Copy,
     CheckCircle2,
     XCircle,
-    ArrowRight
+    ArrowRight,
+    Building2,
+    Users,
+    Lightbulb,
+    GitCommit
 } from 'lucide-react';
 
 export default function ResultsPage() {
@@ -33,7 +37,7 @@ export default function ResultsPage() {
             // Initialize Base Score
             // If baseScore exists in storage, use it. Otherwise, assume the *loaded* readinessScore is the base.
             // But if we already have confidence map, the loaded readinessScore might already be modified.
-            // Safety: If baseScore is missing, set it to analysis.readinessScore. 
+            // Safety: If baseScore is missing, set it to analysis.readinessScore.
             // (Imperfect for legacy data if it was already modified, but safe for new flow)
             const initialBase = analysis.baseScore !== undefined ? analysis.baseScore : analysis.readinessScore;
             setBaseScore(initialBase);
@@ -94,6 +98,9 @@ export default function ResultsPage() {
 
     const downloadTxt = () => {
         if (!data) return;
+        const roundText = data.roundMapping ? data.roundMapping.map(r => `${r.name} (${r.focus}) - ${r.why}`).join('\n') : "N/A";
+        const intelText = data.companyIntel ? `Size: ${data.companyIntel.size} / ${data.companyIntel.type}\nFocus: ${data.companyIntel.focus}` : "N/A";
+
         const content = `
 ANALYSIS RESULTS
 Role: ${data.role}
@@ -101,14 +108,17 @@ Company: ${data.company}
 Date: ${new Date(data.createdAt).toLocaleDateString()}
 Readiness Score: ${data.readinessScore}/100
 ------------------------------------------------
+COMPANY INTEL
+${intelText}
+------------------------------------------------
 SKILLS
 ${Object.entries(data.extractedSkills).map(([cat, skills]) => `${cat}: ${skills.join(', ')}`).join('\n')}
 ------------------------------------------------
+ROUND MAPPING
+${roundText}
+------------------------------------------------
 7-DAY PLAN
 ${data.plan.map(d => `${d.day} (${d.focus}):\n${d.tasks.map(t => `  - ${t}`).join('\n')}`).join('\n\n')}
-------------------------------------------------
-CHECKLIST
-${Object.entries(data.checklist).map(([r, items]) => `${r}:\n${items.map(i => `  - ${i}`).join('\n')}`).join('\n\n')}
 ------------------------------------------------
 QUESTIONS
 ${data.questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
@@ -158,6 +168,34 @@ ${data.questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
                 </div>
             </div>
 
+            {/* Company Intel Block */}
+            {data.companyIntel && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Card className="bg-indigo-50 border-indigo-100">
+                        <CardContent className="pt-6 flex items-center gap-4">
+                            <div className="h-10 w-10 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
+                                <Building2 className="h-5 w-5 text-indigo-600" />
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Industry & Size</p>
+                                <p className="font-semibold text-indigo-900">{data.companyIntel.size} / {data.companyIntel.type}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card className="bg-indigo-50 border-indigo-100 md:col-span-2">
+                        <CardContent className="pt-6 flex items-center gap-4">
+                            <div className="h-10 w-10 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
+                                <Lightbulb className="h-5 w-5 text-indigo-600" />
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Typical Hiring Focus</p>
+                                <p className="font-semibold text-indigo-900">{data.companyIntel.focus}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* LEFT: Skills & Plan */}
@@ -185,8 +223,8 @@ ${data.questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
                                                         key={`${category}-${idx}`}
                                                         onClick={() => handleSkillToggle(skill)}
                                                         className={`group inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${isKnown
-                                                                ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
-                                                                : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                                                            ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+                                                            : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
                                                             }`}
                                                     >
                                                         {isKnown ? <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" /> : <XCircle className="h-3.5 w-3.5 mr-1.5 text-gray-400" />}
@@ -258,6 +296,45 @@ ${data.questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
                         </CardContent>
                     </Card>
 
+                    {/* Round Mapping Engine (Replaces simple checklist) */}
+                    {(data.roundMapping || data.checklist) && (
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle className="flex items-center gap-2">
+                                    <GitCommit className="h-5 w-5 text-green-500" />
+                                    Interview Rounds
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="px-2">
+                                <div className="space-y-6">
+                                    {(data.roundMapping || []).map((round, idx) => (
+                                        <div key={idx} className="relative pl-8 border-l-2 border-gray-200 last:border-0 pb-6 last:pb-0">
+                                            <div className="absolute -left-[9px] top-0 h-4 w-4 rounded-full bg-white border-2 border-green-500"></div>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-xs font-bold text-green-600 uppercase tracking-wider">{round.type}</span>
+                                                <h4 className="font-bold text-gray-900">{round.name}</h4>
+                                                <p className="text-sm font-medium text-gray-700">{round.focus}</p>
+                                                <p className="text-xs text-gray-500 italic mt-1">"{round.why}"</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {/* Fallback for legacy data without roundMapping */}
+                                    {!data.roundMapping && Object.entries(data.checklist).map(([round, items], idx) => (
+                                        <div key={idx} className="pl-4">
+                                            <h4 className="font-semibold text-gray-900 text-sm mb-2">{round}</h4>
+                                            <ul className="text-sm text-gray-600 list-disc list-inside">
+                                                {items.slice(0, 3).map((it, i) => <li key={i}>{it}</li>)}
+                                            </ul>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-6 pt-4 border-t border-gray-100">
+                                    <p className="text-xs text-center text-gray-400">Demo Mode: Company intel generated heuristically.</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
                     {/* Questions */}
                     <Card className="bg-gradient-to-br from-gray-900 to-gray-800 text-white border-0">
                         <CardHeader className="flex flex-row items-center justify-between">
@@ -279,36 +356,8 @@ ${data.questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
                         </CardContent>
                     </Card>
 
-                    {/* Checklist */}
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle className="flex items-center gap-2">
-                                <CheckSquare className="h-5 w-5 text-green-500" />
-                                Checklist
-                            </CardTitle>
-                            <button onClick={() => copyToClipboard(JSON.stringify(data.checklist, null, 2))} className="text-gray-400 hover:text-gray-600">
-                                <Copy className="h-4 w-4" />
-                            </button>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            {Object.entries(data.checklist).map(([round, items], idx) => (
-                                <div key={idx}>
-                                    <h4 className="font-semibold text-gray-900 text-sm mb-2 pb-1 border-b border-gray-100">{round}</h4>
-                                    <ul className="text-sm space-y-2">
-                                        {items.map((item, i) => (
-                                            <li key={i} className="flex items-start gap-2 text-gray-600">
-                                                <div className="h-1.5 w-1.5 rounded-full bg-gray-300 mt-1.5 shrink-0"></div>
-                                                {item}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            ))}
-                        </CardContent>
-                    </Card>
                 </div>
             </div>
         </div>
     );
 }
-
