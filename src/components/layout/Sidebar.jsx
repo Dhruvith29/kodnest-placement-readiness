@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Code, FileCheck, BookOpen, User, LogOut } from 'lucide-react';
+import { LayoutDashboard, Code, FileCheck, BookOpen, User, LogOut, Briefcase, Bookmark, FileText, CheckCircle2, Rocket } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 const navItems = [
@@ -20,11 +20,41 @@ export default function Sidebar() {
 
             <div className="flex-1 overflow-y-auto py-4">
                 <nav className="space-y-1 px-3">
+                    <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Main
+                    </div>
                     {navItems.map((item) => (
                         <NavLink
                             key={item.path}
                             to={item.path}
                             end={item.path === '/dashboard'}
+                            className={({ isActive }) =>
+                                cn(
+                                    "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors group",
+                                    isActive
+                                        ? "bg-primary/10 text-primary"
+                                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                                )
+                            }
+                        >
+                            <item.icon className={cn("mr-3 h-5 w-5 flex-shrink-0")} aria-hidden="true" />
+                            {item.label}
+                        </NavLink>
+                    ))}
+
+                    <div className="mt-6 px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Premium Tools
+                    </div>
+                    {[
+                        { icon: Briefcase, label: 'Job Tracker', path: '/dashboard/jobs' },
+                        { icon: Bookmark, label: 'Saved Jobs', path: '/dashboard/saved-jobs' },
+                        { icon: FileText, label: 'Resume Builder', path: '/resume' },
+                        { icon: CheckCircle2, label: 'Readiness Check', path: '/prp/07-test' },
+                        { icon: Rocket, label: 'Ship Profile', path: '/prp/08-ship' },
+                    ].map((item) => (
+                        <NavLink
+                            key={item.path}
+                            to={item.path}
                             className={({ isActive }) =>
                                 cn(
                                     "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors group",

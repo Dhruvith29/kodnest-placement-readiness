@@ -59,39 +59,39 @@ export default function LandingPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                        {/* Feature 1 */}
-                        <div className="relative group bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100">
+                        {/* Feature 1 - Job Tracker */}
+                        <div className="relative group bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 cursor-pointer" onClick={() => navigate('/dashboard/jobs')}>
                             <div className="absolute top-0 right-0 -mt-3 -mr-3 w-24 h-24 bg-indigo-100 rounded-full opacity-20 group-hover:scale-150 transition-transform duration-500"></div>
                             <div className="inline-flex items-center justify-center p-3 bg-indigo-50 rounded-xl mb-6 text-primary">
                                 <Code className="h-8 w-8" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-3">Practice Problems</h3>
+                            <h3 className="text-xl font-bold text-gray-900 mb-3">Job Tracker</h3>
                             <p className="text-gray-600 leading-relaxed">
-                                Solve coding challenges across various difficulty levels to sharpen your algorithmic thinking.
+                                Curated job feed tailored to your skills. Track applications and save your favorite roles.
                             </p>
                         </div>
 
-                        {/* Feature 2 */}
-                        <div className="relative group bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100">
+                        {/* Feature 2 - Resume Builder */}
+                        <div className="relative group bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 cursor-pointer" onClick={() => navigate('/resume')}>
                             <div className="absolute top-0 right-0 -mt-3 -mr-3 w-24 h-24 bg-purple-100 rounded-full opacity-20 group-hover:scale-150 transition-transform duration-500"></div>
                             <div className="inline-flex items-center justify-center p-3 bg-purple-50 rounded-xl mb-6 text-purple-600">
                                 <Video className="h-8 w-8" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-3">Mock Interviews</h3>
+                            <h3 className="text-xl font-bold text-gray-900 mb-3">AI Resume Builder</h3>
                             <p className="text-gray-600 leading-relaxed">
-                                Simulate real interview scenarios with AI-driven feedback to build confidence and poise.
+                                Build ATS-friendly resumes in minutes. Export to PDF and get hired faster.
                             </p>
                         </div>
 
-                        {/* Feature 3 */}
-                        <div className="relative group bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100">
+                        {/* Feature 3 - Readiness Check */}
+                        <div className="relative group bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 cursor-pointer" onClick={() => navigate('/prp/07-test')}>
                             <div className="absolute top-0 right-0 -mt-3 -mr-3 w-24 h-24 bg-pink-100 rounded-full opacity-20 group-hover:scale-150 transition-transform duration-500"></div>
                             <div className="inline-flex items-center justify-center p-3 bg-pink-50 rounded-xl mb-6 text-pink-600">
                                 <BarChart3 className="h-8 w-8" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-3">Track Progress</h3>
+                            <h3 className="text-xl font-bold text-gray-900 mb-3">Readiness Check</h3>
                             <p className="text-gray-600 leading-relaxed">
-                                Visualize your growth with detailed analytics and insights into your strengths and weaknesses.
+                                Verify your profile and ensure you are 100% ready to ship your application.
                             </p>
                         </div>
                     </div>

@@ -99,22 +99,25 @@ export default function ResumePreview() {
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col items-center py-8">
             {/* Action Bar */}
+            {/* Action Bar */}
             <div className="w-full max-w-[8.5in] flex justify-between items-center mb-6 px-4 md:px-0 no-print">
                 <Link to="/resume/builder" className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors rounded-lg px-3 py-2 text-sm font-medium hover:bg-white">
                     <ArrowLeft className="h-4 w-4" /> Back to Builder
                 </Link>
-                className="px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
+                <button
+                    onClick={handlePrint}
+                    className="px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
                 >
-                <Printer className="h-4 w-4" /> Print / PDF
-            </button>
-        </nav>
+                    <Printer className="h-4 w-4" /> Print / PDF
+                </button>
+            </div>
 
-            {/* Preview Container */ }
-    <main className="pt-24 pb-20 flex justify-center print:pt-0 print:pb-0">
-        <div className="w-[8.5in] min-h-[11in] bg-white shadow-xl print:shadow-none">
-            <ResumePreviewComponent data={resumeData} />
+            {/* Preview Container */}
+            <main className="flex justify-center print:pt-0 print:pb-0">
+                <div className="w-[8.5in] min-h-[11in] bg-white shadow-xl print:shadow-none">
+                    <ResumePreviewComponent data={resumeData} />
+                </div>
+            </main>
         </div>
-    </main>
-        </div >
     );
 }

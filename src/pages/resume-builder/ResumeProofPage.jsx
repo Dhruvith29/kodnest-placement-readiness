@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ContextHeader from '../../components/layout/ContextHeader';
-import { CheckCircle2, Copy, Rocket, ExternalLink, AlertCircle, Trophy } from 'lucide-react';
+import { CheckCircle2, Copy, ExternalLink, AlertCircle, Trophy } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const ResumeProofPage = () => {
@@ -165,8 +165,8 @@ Core Capabilities:
                                         type="url"
                                         placeholder="https://vercel.app/..."
                                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                                        value={links.deploy}
-                                        onChange={e => setLinks({ ...links, deploy: e.target.value })}
+                                        value={links.deployed}
+                                        onChange={e => setLinks({ ...links, deployed: e.target.value })}
                                     />
                                 </div>
                             </div>

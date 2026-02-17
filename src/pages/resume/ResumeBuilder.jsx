@@ -309,7 +309,7 @@ export default function ResumeBuilder() {
         return 'text-red-600 bg-red-50 border-red-200 stroke-red-500';
     };
 
-    const getScoreColor = (s) => s >= 80 ? 'text-green-600 bg-green-50 border-green-200' : s >= 50 ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-red-600 bg-red-50 border-red-200';
+
 
     // -- Sub-Components --
     const TagInput = ({ placeholder, onAdd }) => (
